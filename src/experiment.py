@@ -10,6 +10,7 @@ from src.models.kernelPV.model import kpv_experiments
 from src.models.DFPV.trainer import dfpv_experiments
 from src.models.PMMR.model import pmmr_experiments
 from src.models.CEVAE.trainer import cevae_experiments
+from src.models.NMMR.NMMR_experiments import NMMR_demand_experiment
 
 logger = logging.getLogger()
 
@@ -23,6 +24,8 @@ def get_run_func(mdl_name: str):
         return pmmr_experiments
     elif mdl_name == "cevae":
         return cevae_experiments
+    elif mdl_name == "nmmr":
+        return NMMR_demand_experiment
     else:
         raise ValueError(f"name {mdl_name} is not known")
 
