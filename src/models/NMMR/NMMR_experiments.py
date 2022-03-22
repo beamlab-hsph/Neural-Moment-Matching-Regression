@@ -72,6 +72,7 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
 
     # generate train data
     train_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed)
+    val_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed + 1)
     test_data_org = generate_test_data_ate(data_config=data_config)
 
     # preprocess data
@@ -80,6 +81,8 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
     train_t = PVTrainDataSetTorch.from_numpy(train_data)
     test_data = preprocessor.preprocess_for_test_input(test_data_org)
     test_data_t = PVTestDataSetTorch.from_numpy(test_data)
+    val_data = preprocessor.preprocess_for_train(val_data_org)
+    val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
     # precompute the kernel matrix
     kernel_inputs_train = torch.cat((train_t.treatment, train_t.treatment_proxy), dim=1)
@@ -93,17 +96,17 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
     if trainer.gpu_flg:
         # torch.cuda.empty_cache()
         test_data_t = test_data_t.to_gpu()
+        val_data_t = val_data_t.to_gpu()
 
     # Create a distribution of W's for the model to predict on
-    # TODO: switch these train W's to val/test W's (?)
     intervention_array_len = test_data_t.treatment.shape[0]
-    train_data_len = train_t.outcome_proxy.shape[0]
+    train_data_len = val_data_t.outcome_proxy.shape[0]
     model_inputs_val_doA = torch.zeros([intervention_array_len, train_data_len, 2], dtype=torch.float32).cuda()
 
     # Set one axis to a constant W_train distribution, vary other axis across intervention values
     for i in range(intervention_array_len):
         model_inputs_val_doA[i, :, 0] = test_data_t.treatment[i]
-        model_inputs_val_doA[i, :, 1] = train_t.outcome_proxy.squeeze()
+        model_inputs_val_doA[i, :, 1] = val_data_t.outcome_proxy.squeeze()
 
     E_w_haw = torch.Tensor([torch.mean(model(model_inputs_val_doA[i])) for i in range(intervention_array_len)])
     pred = preprocessor.postprocess_for_prediction(E_w_haw).numpy()
