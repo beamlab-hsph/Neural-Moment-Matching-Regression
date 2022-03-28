@@ -106,6 +106,7 @@ def pmmr_experiments(data_config: Dict[str, Any], model_param: Dict[str, Any],
     model.fit(train_data, data_config["name"])
     pred = model.predict(test_data.treatment)
     pred = preprocessor.postprocess_for_prediction(pred)
+    np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
     if test_data.structural is not None:
         if data_config["name"] in ("kpv", "deaner"):
             return np.mean(np.abs(pred - test_data.structural))
