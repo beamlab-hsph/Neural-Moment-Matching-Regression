@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load results
-# cwd = os.getcwd()
-cwd = "/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/data_visualization"
+cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_demand_figures")
 method_dirs = next(os.walk(data_for_figs))[1]
 
@@ -32,8 +31,8 @@ for sample_size in df_dict:
 # Create MSE boxplots for each sample size
 for sample_size, df in df_dict2.items():
     g = sns.boxplot(x="variable", y="value", data=pd.melt(df))
-    g.set_ylabel("Method", fontsize=16)
-    g.set_xlabel("Out-of-sample MSE")
+    g.set_ylabel("Out-of-sample MSE", fontsize=16)
+    g.set_xlabel("Method")
     g.set_xticklabels(g.get_xticklabels(), rotation=60)
     g.set_title(f"Causal MSE for Xu's Demand experiment (n={sample_size})")
     plt.tight_layout()

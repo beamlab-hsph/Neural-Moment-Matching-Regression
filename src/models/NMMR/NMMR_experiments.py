@@ -27,8 +27,10 @@ class NMMR_Trainer(object):
 
         # TODO: send model layers to GPU/CUDA, change model init to accept them (see DFPV trainer)
 
-        self.writer = SummaryWriter(log_dir=op.join(dump_folder, "tensorboard_log"))
         self.mse_loss = nn.MSELoss()
+
+        if self.log_metrics:
+            self.writer = SummaryWriter(log_dir=op.join(dump_folder, "tensorboard_log"))
 
     def train(self, train_t: PVTrainDataSetTorch, val_t: PVTrainDataSetTorch,
               kernel_matrix_train, kernel_matrix_val, verbose: int = 0) -> MLP_for_demand:
@@ -136,8 +138,20 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
 
     if test_data.structural is not None:
         # test_data_org.structural is equivalent to EY_doA
-        oos_loss: float = np.mean((pred - test_data_org.structural.squeeze()) ** 2)
+        np.testing.assert_array_equal(pred.shape, test_data_org.structural.shape)
+        oos_loss = np.mean((pred - test_data_org.structural) ** 2)
         if data_config["name"] in ["kpv", "deaner"]:
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
-    np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
     return oos_loss
+
+
+if __name__ == "__main__":
+    data_config = {"name": "demand", "n_sample": 5000}
+    model_param = {"name": "nmmr",
+                   "n_epochs": 1000,
+                   "batch_size": 1000,
+                   "gpu_flg": "False",
+                   "log_metrics": "False"}
+
+    one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
+    NMMR_demand_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)
