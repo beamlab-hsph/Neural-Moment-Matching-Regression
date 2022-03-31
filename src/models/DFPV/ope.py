@@ -21,9 +21,9 @@ class DFPVOPEModel(object):
     weight: torch.Tensor
 
     def __init__(self, base_model: DFPVModel, data_configs: Dict[str, Any], train_params: Dict[str, Any],
-                 gpu_flg: bool = False, dump_folder: Optional[Path] = None):
+                 dump_folder: Optional[Path] = None):
         self.data_config = data_configs
-        self.gpu_flg = gpu_flg and torch.cuda.is_available()
+        self.gpu_flg = torch.cuda.is_available()
         if self.gpu_flg:
             logger.info("gpu mode")
         # configure training params

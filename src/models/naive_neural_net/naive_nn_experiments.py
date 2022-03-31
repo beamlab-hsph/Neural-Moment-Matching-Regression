@@ -17,11 +17,11 @@ class Naive_NN_Trainer(object):
         self.n_sample = self.data_config['n_sample']
         self.n_epochs = train_params['n_epochs']
         self.batch_size = train_params['batch_size']
-        self.gpu_flg = train_params['gpu_flg'] == "True"
+        self.gpu_flg = torch.cuda.is_available()
 
     def train(self, train_t: PVTrainDataSetTorch, verbose: int = 0) -> Naive_NN_for_demand:
 
-        # inputs consist of (A, W) tuples
+        # inputs consist of only A
         model = Naive_NN_for_demand(input_dim=1)
 
         if self.gpu_flg:

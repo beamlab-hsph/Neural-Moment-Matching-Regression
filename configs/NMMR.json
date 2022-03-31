@@ -1,5 +1,5 @@
 {
-    "n_repeat": 20,
+    "n_repeat": 3,
     "data": {
         "name" : "demand",
         "n_sample" : [1000, 5000]
@@ -8,7 +8,6 @@
         "name": "nmmr",
         "n_epochs": 5000,
         "batch_size": 1000,
-        "gpu_flg": "True",
         "log_metrics": "True"
     }
 }

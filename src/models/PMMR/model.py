@@ -16,7 +16,6 @@ def get_kernel_func(data_name: str) -> Tuple[AbsKernel, AbsKernel, AbsKernel, Ab
         return ColumnWiseGaussianKernel(), ColumnWiseGaussianKernel(), ColumnWiseGaussianKernel(), ColumnWiseGaussianKernel()
 
 
-
 class PMMRModel:
     treatment_kernel_func: AbsKernel
     treatment_proxy_kernel_func: AbsKernel
@@ -42,7 +41,6 @@ class PMMRModel:
         self.outcome_proxy_kernel_func = kernels[2]
         self.backdoor_kernel_func = kernels[3]
         n_train = train_data.treatment.shape[0]
-
 
         # Set scales to be median
         self.treatment_proxy_kernel_func.fit(train_data.treatment_proxy, scale=self.scale)

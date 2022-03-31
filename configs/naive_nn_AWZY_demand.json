@@ -5,6 +5,8 @@
         "n_sample" : [10000, 50000]
     },
     "model": {
-        "name": "linear_regression"
+        "name": "naive_neural_net_AWZY",
+        "n_epochs": 5000,
+        "batch_size": 1000
     }
 }

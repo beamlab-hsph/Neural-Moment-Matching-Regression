@@ -22,7 +22,7 @@ class NMMR_Trainer(object):
         self.n_sample = self.data_config['n_sample']
         self.n_epochs = train_params['n_epochs']
         self.batch_size = train_params['batch_size']
-        self.gpu_flg = train_params['gpu_flg'] == "True"
+        self.gpu_flg = torch.cuda.is_available()
         self.log_metrics = train_params['log_metrics'] == "True"
 
         # TODO: send model layers to GPU/CUDA, change model init to accept them (see DFPV trainer)
@@ -150,7 +150,6 @@ if __name__ == "__main__":
     model_param = {"name": "nmmr",
                    "n_epochs": 1000,
                    "batch_size": 1000,
-                   "gpu_flg": "False",
                    "log_metrics": "False"}
 
     one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))

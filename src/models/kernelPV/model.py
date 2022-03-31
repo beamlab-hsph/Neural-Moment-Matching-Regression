@@ -48,7 +48,6 @@ class KernelPVModel:
         self.split_ratio: float = split_ratio
         self.x_mean_vec = None
 
-
     def cal_kernel_mat_ZAX(self, data1: PVTrainDataSet, data2: PVTrainDataSet):
         kernel_mat = self.treatment_kernel_func.cal_kernel_mat(data1.treatment, data2.treatment)
         kernel_mat *= self.treatment_proxy_kernel_func.cal_kernel_mat(data1.treatment_proxy,
