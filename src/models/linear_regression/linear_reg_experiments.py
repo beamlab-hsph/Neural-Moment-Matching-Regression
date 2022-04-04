@@ -2,21 +2,26 @@ from typing import Dict, Any
 from pathlib import Path
 import torch
 import numpy as np
+import os.path as op
 
 from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
 from src.data.ate import generate_train_data_ate, generate_test_data_ate, get_preprocessor_ate
 from sklearn import linear_model
+from src.utils.make_AWZ_test import make_AWZ_test
 
 
 def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, Any],
                            one_mdl_dump_dir: Path,
                            random_seed: int = 42, verbose: int = 0):
+    model_name = model_param['name']
+
     # set random seeds
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
 
     # generate train data
     train_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed)
+    val_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed + 1)
     test_data_org = generate_test_data_ate(data_config=data_config)
 
     # preprocess data
@@ -24,13 +29,33 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
     train_data = preprocessor.preprocess_for_train(train_data_org)
     train_t = PVTrainDataSetTorch.from_numpy(train_data)
     test_data = preprocessor.preprocess_for_test_input(test_data_org)
+    test_data_t = PVTestDataSetTorch.from_numpy(test_data)
+    val_data = preprocessor.preprocess_for_train(val_data_org)
+    val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
     # train model
     model = linear_model.LinearRegression()
-    model.fit(train_t.treatment.reshape(-1, 1), train_t.outcome.reshape(-1, 1))
 
-    # get model predictions on do(A) intervention values
-    pred = model.predict(test_data.treatment.reshape(-1, 1))
+    if model_name == "linear_regression_AY":
+        X = train_t.treatment.reshape(-1, 1)
+        y = train_t.outcome.reshape(-1, 1)
+        model.fit(X, y)
+
+        # get model predictions on do(A) intervention values
+        pred = model.predict(test_data.treatment.reshape(-1, 1))
+
+    elif model_name == "linear_regression_AWZY":
+        AWZ = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1)
+        Y = train_t.outcome.reshape(-1, 1)
+        model.fit(AWZ, Y)
+
+        # get model predictions on do(A) intervention values
+        AWZ_test = make_AWZ_test(test_data_t, val_data_t)
+        pred = [np.mean(model.predict(AWZ_test[i, :, :])) for i in range(AWZ_test.shape[0])]
+
+    else:
+        raise ValueError(f"name {model_name} is not known")
+
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 
     if test_data.structural is not None:
@@ -40,3 +65,11 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
     return oos_loss
+
+
+if __name__ == "__main__":
+    data_config = {"name": "demand", "n_sample": 5000}
+    model_param = {"name": "linear_regression_AWZY"}
+
+    one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
+    linear_reg_demand_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)

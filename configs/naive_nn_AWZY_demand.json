@@ -2,11 +2,13 @@
     "n_repeat": 20,
     "data": {
         "name" : "demand",
-        "n_sample" : [10000, 50000]
+        "n_sample" : [1000, 5000]
     },
     "model": {
         "name": "naive_neural_net_AWZY",
         "n_epochs": 5000,
-        "batch_size": 1000
+        "batch_size": 1000,
+        "learning_rate": 3e-4,
+        "l2_penalty": 3e-6
     }
 }

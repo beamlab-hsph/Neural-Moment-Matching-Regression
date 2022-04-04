@@ -5,6 +5,6 @@
         "n_sample" : [10000, 50000]
     },
     "model": {
-        "name": "linear_regression"
+        "name": "linear_regression_AY"
     }
 }

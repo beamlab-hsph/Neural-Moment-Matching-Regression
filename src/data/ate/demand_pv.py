@@ -17,6 +17,7 @@ def generatate_demand_core(n_sample: int, rng):
     outcome = cal_outcome(price, views, demand)
     return demand, cost1, cost2, price, views, outcome
 
+
 def generate_train_demand_pv(n_sample: int, seed=42, **kwargs):
     rng = default_rng(seed=seed)
     demand, cost1, cost2, price, views, outcome = generatate_demand_core(n_sample, rng)

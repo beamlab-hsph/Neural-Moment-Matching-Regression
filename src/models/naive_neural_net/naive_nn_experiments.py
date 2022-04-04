@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any
 from pathlib import Path
+import os.path as op
 import torch
 import numpy as np
 from torch import optim, nn
@@ -8,28 +9,39 @@ from tqdm import tqdm
 from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
 from src.data.ate import generate_train_data_ate, generate_test_data_ate, get_preprocessor_ate
 from src.models.naive_neural_net.naive_nn_model import Naive_NN_for_demand
+from src.utils.make_AWZ_test import make_AWZ_test
 
 
 class Naive_NN_Trainer(object):
     def __init__(self, data_configs: Dict[str, Any], train_params: Dict[str, Any], dump_folder: Optional[Path] = None):
 
         self.data_config = data_configs
+        self.train_params = train_params
         self.n_sample = self.data_config['n_sample']
-        self.n_epochs = train_params['n_epochs']
-        self.batch_size = train_params['batch_size']
+        self.model_name = self.train_params['name']
+        self.n_epochs = self.train_params['n_epochs']
+        self.batch_size = self.train_params['batch_size']
+        self.l2_penalty = self.train_params['l2_penalty']
+        self.learning_rate = self.train_params['learning_rate']
         self.gpu_flg = torch.cuda.is_available()
 
     def train(self, train_t: PVTrainDataSetTorch, verbose: int = 0) -> Naive_NN_for_demand:
 
-        # inputs consist of only A
-        model = Naive_NN_for_demand(input_dim=1)
+        if self.model_name == "naive_neural_net_AY":
+            # inputs consist of only A
+            model = Naive_NN_for_demand(input_dim=1)
+        elif self.model_name == "naive_neural_net_AWZY":
+            # inputs consist of A, W, and Z (and Z is 2-dimensional)
+            model = Naive_NN_for_demand(input_dim=4)
+        else:
+            raise ValueError(f"name {self.model_name} is not known")
 
         if self.gpu_flg:
             train_t = train_t.to_gpu()
             model.cuda()
 
         # weight_decay implements L2 penalty
-        optimizer = optim.Adam(list(model.parameters()), lr=3e-4, weight_decay=3e-6)
+        optimizer = optim.Adam(list(model.parameters()), lr=self.learning_rate, weight_decay=self.l2_penalty)
         loss = nn.MSELoss()
 
         # train model
@@ -38,11 +50,18 @@ class Naive_NN_Trainer(object):
 
             for i in range(0, self.n_sample, self.batch_size):
                 indices = permutation[i:i + self.batch_size]
-                batch_A, batch_y = train_t.treatment[indices], train_t.outcome[indices]
+                batch_y = train_t.outcome[indices]
+
+                if self.model_name == "naive_neural_net_AY":
+                    batch_inputs = train_t.treatment[indices]
+
+                if self.model_name == "naive_neural_net_AWZY":
+                    batch_inputs = torch.cat((train_t.treatment[indices], train_t.outcome_proxy[indices],
+                                              train_t.treatment_proxy[indices]), dim=1)
 
                 # training loop
                 optimizer.zero_grad()
-                pred_y = model(batch_A)
+                pred_y = model(batch_inputs)
                 output = loss(pred_y, batch_y)
                 output.backward()
                 optimizer.step()
@@ -59,6 +78,7 @@ def naive_nn_demand_experiment(data_config: Dict[str, Any], model_param: Dict[st
 
     # generate train data
     train_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed)
+    val_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed + 1)
     test_data_org = generate_test_data_ate(data_config=data_config)
 
     # preprocess data
@@ -67,13 +87,27 @@ def naive_nn_demand_experiment(data_config: Dict[str, Any], model_param: Dict[st
     train_t = PVTrainDataSetTorch.from_numpy(train_data)
     test_data = preprocessor.preprocess_for_test_input(test_data_org)
     test_data_t = PVTestDataSetTorch.from_numpy(test_data)
+    val_data = preprocessor.preprocess_for_train(val_data_org)
+    val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
     # train model
     trainer = Naive_NN_Trainer(data_config, model_param)
     model = trainer.train(train_t, verbose)
 
+    # prepare test and val data on the gpu
+    if trainer.gpu_flg:
+        # torch.cuda.empty_cache()
+        test_data_t = test_data_t.to_gpu()
+        val_data_t = val_data_t.to_gpu()
+
     # get model predictions on do(A) intervention values
-    pred = model(test_data_t.treatment).detach().numpy()
+    if model_param['name'] == "naive_neural_net_AY":
+        pred = model(test_data_t.treatment).cpu().detach().numpy()
+
+    elif model_param['name'] == "naive_neural_net_AWZY":
+        AWZ_test = make_AWZ_test(test_data_t, val_data_t)
+        pred = torch.mean(model(AWZ_test), dim=1).cpu().detach().numpy()
+
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 
     if test_data.structural is not None:
@@ -83,3 +117,17 @@ def naive_nn_demand_experiment(data_config: Dict[str, Any], model_param: Dict[st
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
     return oos_loss
+
+
+if __name__ == "__main__":
+    data_config = {"name": "demand", "n_sample": 5000}
+    model_param = {
+        "name": "naive_neural_net_AWZY",
+        "n_epochs": 50,
+        "batch_size": 1000,
+        "learning_rate": 3e-4,
+        "l2_penalty": 3e-6
+    }
+
+    one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
+    naive_nn_demand_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)

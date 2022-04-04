@@ -27,9 +27,9 @@ def get_run_func(mdl_name: str):
         return cevae_experiments
     elif mdl_name == "nmmr":
         return NMMR_demand_experiment
-    elif mdl_name == "linear_regression":
+    elif mdl_name == "linear_regression_AY" or mdl_name == "linear_regression_AWZY":
         return linear_reg_demand_experiment
-    elif mdl_name == "naive_neural_net":
+    elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY":
         return naive_nn_demand_experiment
     else:
         raise ValueError(f"name {mdl_name} is not known")

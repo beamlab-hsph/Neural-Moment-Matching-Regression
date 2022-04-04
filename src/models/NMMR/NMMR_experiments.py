@@ -24,6 +24,8 @@ class NMMR_Trainer(object):
         self.batch_size = train_params['batch_size']
         self.gpu_flg = torch.cuda.is_available()
         self.log_metrics = train_params['log_metrics'] == "True"
+        self.l2_penalty = train_params['l2_penalty']
+        self.learning_rate = train_params['learning_rate']
 
         # TODO: send model layers to GPU/CUDA, change model init to accept them (see DFPV trainer)
 
@@ -46,7 +48,7 @@ class NMMR_Trainer(object):
             model.cuda()
 
         # weight_decay implements L2 penalty
-        optimizer = optim.Adam(list(model.parameters()), lr=3e-4, weight_decay=3e-6)
+        optimizer = optim.Adam(list(model.parameters()), lr=self.learning_rate, weight_decay=self.l2_penalty)
 
         # train model
         for epoch in tqdm(range(self.n_epochs)):
