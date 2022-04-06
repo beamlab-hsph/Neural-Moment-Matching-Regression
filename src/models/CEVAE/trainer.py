@@ -35,7 +35,7 @@ class CEVAETrainer(object):
                                             hidden_dim=train_params["hidden_dim"],
                                             n_sample=self.n_learning_sample)
         if self.gpu_flg:
-            self.distribution.to("cuda:0")
+            self.distribution = self.distribution.to("cuda:0")
 
         self.opt = torch.optim.Adamax(self.distribution.parameters(),
                                       weight_decay=self.weight_decay,
@@ -110,7 +110,7 @@ def cevae_experiments(data_config: Dict[str, Any], model_param: Dict[str, Any],
     test_data = preprocessor.preprocess_for_test_input(test_data_org)
 
     torch.manual_seed(random_seed)
-    trainer = CEVAETrainer(data_config, model_param, False, dump_dir)
+    trainer = CEVAETrainer(data_config, model_param, dump_dir)
 
     test_data_t = PVTestDataSetTorch.from_numpy(test_data)
     if trainer.gpu_flg:

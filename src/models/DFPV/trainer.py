@@ -204,7 +204,7 @@ def dfpv_experiments(data_config: Dict[str, Any], model_param: Dict[str, Any],
 
 
     torch.manual_seed(random_seed)
-    trainer = DFPVTrainer(data_config, model_param, False, dump_dir)
+    trainer = DFPVTrainer(data_config, model_param, dump_dir)
     mdl = trainer.train(train_data, verbose)
 
     test_data_t = PVTestDataSetTorch.from_numpy(test_data)
