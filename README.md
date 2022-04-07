@@ -1,5 +1,5 @@
 # Neural Moment Matching Regression
-Code for an upcoming NeurIPS submission
+Code for an upcoming NeurIPS submission   
 
 ## How to Run Experiments
 
