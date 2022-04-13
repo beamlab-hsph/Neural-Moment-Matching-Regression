@@ -1,18 +1,36 @@
 {
     "n_repeat": 20,
     "data": {
-        "name" : "demand",
-        "n_sample" : 1000,
-        "Z_noise": [1, 2, 4, 8, 16],
-        "W_noise": [1, 16, 64, 150]
+        "name": "demand",
+        "n_sample": 5000,
+        "Z_noise": 1,
+        "W_noise": 1
     },
     "model": {
         "name": "naive_neural_net_AY",
-        "n_epochs": 500,
+        "n_epochs": 3000,
         "batch_size": 1000,
-        "learning_rate": 3e-4,
-        "l2_penalty": 3e-5,
-        "network_depth": 2,
-        "network_width": 80
+        "log_metrics": "True",
+        "learning_rate": [
+            3e-05,
+            0.0003,
+            0.003
+        ],
+        "l2_penalty": [
+            3e-07,
+            3e-06,
+            3e-05
+        ],
+        "network_depth": [
+            2,
+            3,
+            4,
+            5
+        ],
+        "network_width": [
+            10,
+            40,
+            80
+        ]
     }
 }

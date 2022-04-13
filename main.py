@@ -70,7 +70,7 @@ if __name__ == '__main__':
     configure_logger(SCRIPT_NAME, log_dir=LOG_DIR, webhook_url=SLACK_URL)
     try:
         main(obj={})
-        # main(['configs/NMMR.json', 'ate'], obj={})
+        # main(['configs/test.json', 'ate'], obj={})
         logger.critical('===== Script completed successfully! =====')
     except Exception as e:
         logger.exception(e)

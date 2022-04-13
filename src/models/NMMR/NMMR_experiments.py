@@ -18,7 +18,8 @@ from src.models.NMMR.utils import rbf_kernel, calculate_kernel_matrix
 
 
 class NMMR_Trainer(object):
-    def __init__(self, data_configs: Dict[str, Any], train_params: Dict[str, Any], dump_folder: Optional[Path] = None):
+    def __init__(self, data_configs: Dict[str, Any], train_params: Dict[str, Any], random_seed: int,
+                 dump_folder: Optional[Path] = None):
 
         self.data_config = data_configs
         self.train_params = train_params
@@ -34,7 +35,7 @@ class NMMR_Trainer(object):
         self.mse_loss = nn.MSELoss()
 
         if self.log_metrics:
-            self.writer = SummaryWriter(log_dir=op.join(dump_folder, "tensorboard_log"))
+            self.writer = SummaryWriter(log_dir=op.join(dump_folder, f"tensorboard_log_{random_seed}"))
             self.causal_train_losses = []
             self.causal_val_losses = []
 
@@ -127,7 +128,7 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
     val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
     # train model
-    trainer = NMMR_Trainer(data_config, model_param, one_mdl_dump_dir)
+    trainer = NMMR_Trainer(data_config, model_param, random_seed, one_mdl_dump_dir)
     model = trainer.train(train_t, val_data_t, verbose)
 
     # prepare test data on the gpu

@@ -3,7 +3,9 @@ from pathlib import Path
 import os.path as op
 import torch
 import numpy as np
+import pandas as pd
 from torch import optim, nn
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
@@ -13,7 +15,8 @@ from src.utils.make_AWZ_test import make_AWZ_test
 
 
 class Naive_NN_Trainer(object):
-    def __init__(self, data_configs: Dict[str, Any], train_params: Dict[str, Any], dump_folder: Optional[Path] = None):
+    def __init__(self, data_configs: Dict[str, Any], train_params: Dict[str, Any], random_seed: int,
+                 dump_folder: Optional[Path] = None):
 
         self.data_config = data_configs
         self.train_params = train_params
@@ -24,8 +27,14 @@ class Naive_NN_Trainer(object):
         self.l2_penalty = self.train_params['l2_penalty']
         self.learning_rate = self.train_params['learning_rate']
         self.gpu_flg = torch.cuda.is_available()
+        self.log_metrics = self.train_params.get('log_metrics', False)
 
-    def train(self, train_t: PVTrainDataSetTorch, verbose: int = 0) -> Naive_NN_for_demand:
+        if self.log_metrics and (dump_folder is not None):
+            self.writer = SummaryWriter(log_dir=op.join(dump_folder, f"tensorboard_log_{random_seed}"))
+            self.train_losses = []
+            self.val_losses = []
+
+    def train(self, train_t: PVTrainDataSetTorch, val_t: PVTrainDataSetTorch, verbose: int = 0) -> Naive_NN_for_demand:
 
         if self.model_name == "naive_neural_net_AY":
             # inputs consist of only A
@@ -38,6 +47,7 @@ class Naive_NN_Trainer(object):
 
         if self.gpu_flg:
             train_t = train_t.to_gpu()
+            val_t = val_t.to_gpu()
             model.cuda()
 
         # weight_decay implements L2 penalty
@@ -66,6 +76,23 @@ class Naive_NN_Trainer(object):
                 output.backward()
                 optimizer.step()
 
+            if self.log_metrics:
+                with torch.no_grad():
+                    if self.model_name == "naive_neural_net_AY":
+                        preds_train = model(train_t.treatment)
+                        preds_val = model(val_t.treatment)
+                    elif self.model_name == "naive_neural_net_AWZY":
+                        preds_train = model(torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1))
+                        preds_val = model(torch.cat((val_t.treatment, val_t.outcome_proxy, val_t.treatment_proxy), dim=1)) 
+
+                    # "Observed" MSE (not causal MSE) loss calculation
+                    mse_train = loss(preds_train, train_t.outcome)
+                    mse_val = loss(preds_val, val_t.outcome)
+                    self.writer.add_scalar('obs_MSE/train', mse_train, epoch)
+                    self.writer.add_scalar('obs_MSE/val', mse_val, epoch)
+                    self.train_losses.append(mse_train)
+                    self.val_losses.append(mse_val)
+
         return model
 
 
@@ -91,8 +118,8 @@ def naive_nn_demand_experiment(data_config: Dict[str, Any], model_param: Dict[st
     val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
     # train model
-    trainer = Naive_NN_Trainer(data_config, model_param)
-    model = trainer.train(train_t, verbose)
+    trainer = Naive_NN_Trainer(data_config, model_param, random_seed, one_mdl_dump_dir)
+    model = trainer.train(train_t, val_data_t, verbose)
 
     # prepare test and val data on the gpu
     if trainer.gpu_flg:
@@ -116,7 +143,13 @@ def naive_nn_demand_experiment(data_config: Dict[str, Any], model_param: Dict[st
         if data_config["name"] in ["kpv", "deaner"]:
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
-    return oos_loss
+
+    if trainer.log_metrics:
+        return oos_loss, pd.DataFrame(
+            data={'obs_MSE_train': torch.Tensor(trainer.train_losses[-50:], device="cpu").numpy(),
+                  'obs_MSE_val': torch.Tensor(trainer.val_losses[-50:], device="cpu").numpy()})
+    else:
+        return oos_loss
 
 
 if __name__ == "__main__":
