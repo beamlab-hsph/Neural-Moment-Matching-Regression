@@ -32,7 +32,7 @@ def generate_test_data_ate(data_config: Dict[str, Any]) -> Optional[PVTestDataSe
     if data_name == "kpv":
         return generate_test_kpv_experiment()
     elif data_name == "demand":
-        return generate_test_demand_pv()
+        return generate_test_demand_pv(**data_config)
     elif data_name == "dsprite":
         return generate_test_dsprite()
     elif data_name == "cevae":

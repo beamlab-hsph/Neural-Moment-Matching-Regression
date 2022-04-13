@@ -7,7 +7,6 @@ def rbf_kernel(x: torch.Tensor, y: torch.Tensor, length_scale=1):
 
 
 def calculate_kernel_matrix(dataset, kernel=rbf_kernel, **kwargs):
-
     tensor = dataset.permute(1, 0)
     tensor1 = tensor.unsqueeze(dim=2)
     tensor2 = tensor.unsqueeze(dim=1)

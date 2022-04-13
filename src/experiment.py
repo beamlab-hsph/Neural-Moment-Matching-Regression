@@ -2,6 +2,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import os
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 import logging
 
@@ -58,8 +59,26 @@ def experiments(configs: Dict[str, Any],
                 os.mkdir(one_mdl_dump_dir)
             else:
                 one_mdl_dump_dir = one_dump_dir
-            tasks = [delayed(run_func)(env_param, mdl_param, one_mdl_dump_dir, idx, verbose) for idx in range(n_repeat)]
-            res = Parallel(n_jobs=num_cpus)(tasks)
-            print(res)
-            np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(res))
+
+            if model_config.get("log_metrics", False):
+                test_losses = []
+                train_metrics_ls = []
+                for idx in range(n_repeat):
+                    test_loss, train_metrics = run_func(env_param, mdl_param, one_mdl_dump_dir, idx, verbose)
+                    test_losses.append(test_loss)
+                    train_metrics['rep_ID'] = idx
+                    train_metrics_ls.append(train_metrics)
+
+                np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))
+                metrics_df = pd.concat(train_metrics_ls).reset_index()
+                metrics_df.rename(columns={'index': 'epoch_num'}, inplace=True)
+                metrics_df.to_csv(one_mdl_dump_dir.joinpath("train_metrics.csv"), index=False)
+            else:
+                test_losses = []
+                for idx in range(n_repeat):
+                    test_loss = run_func(env_param, mdl_param, one_mdl_dump_dir, idx, verbose)
+                    test_losses.append(test_loss)
+
+                np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))
+
         logger.critical(f"{dump_name} ended")

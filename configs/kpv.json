@@ -2,17 +2,13 @@
     "n_repeat": 20,
     "data": {
         "name" : "demand",
-        "n_sample" : [1000, 5000],
+        "n_sample" : [10000, 50000],
         "preprocess" : "Identity"
     },
     "model": {
         "name": "kpv",
-        "lam1_max": 0.1,
-        "lam1_min": 0.0001,
-        "n_lam1_search": 10,
-        "lam2_max": 0.1,
-        "lam2_min": 0.0001,
-        "n_lam2_search": 10,
+        "lam1": 0.001,
+        "lam2": 0.001,
         "split_ratio": 0.5,
         "scale": 0.5,
         "data_scaling": true

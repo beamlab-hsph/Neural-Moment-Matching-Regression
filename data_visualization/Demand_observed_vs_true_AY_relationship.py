@@ -6,8 +6,9 @@ from src.data.ate import generate_train_data_ate
 
 # Create a mock training dataset (to show the training distribution of A and Y)
 n_samples = 1000
+W_noise = 1
 ticket_prices_fine = np.linspace(10, 30, n_samples)
-EY_doA = np.array([cal_structural(a) for a in ticket_prices_fine])
+EY_doA = np.array([cal_structural(a, W_noise) for a in ticket_prices_fine])
 
 train_data = generate_train_data_ate(data_config={"name": "demand", "n_sample": n_samples}, rand_seed=42)
 plt.plot(ticket_prices_fine, EY_doA, color="black", label="true E[Y | do(A)] (test range)")

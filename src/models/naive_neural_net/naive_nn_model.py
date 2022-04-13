@@ -4,15 +4,24 @@ import torch.nn as nn
 
 class Naive_NN_for_demand(nn.Module):
 
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, train_params):
         super(Naive_NN_for_demand, self).__init__()
 
-        self.fc1 = nn.Linear(input_dim, 10)
-        self.fc2 = nn.Linear(10, 10)
-        self.fc3 = nn.Linear(10, 1)
+        self.train_params = train_params
+        self.network_width = train_params["network_width"]
+        self.network_depth = train_params["network_depth"]
+
+        self.layer_list = nn.ModuleList()
+        for i in range(self.network_depth):
+            if i == 0:
+                self.layer_list.append(nn.Linear(input_dim, self.network_width))
+            else:
+                self.layer_list.append(nn.Linear(self.network_width, self.network_width))
+        self.layer_list.append(nn.Linear(self.network_width, 1))
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        x = self.fc3(x)
+        for ix, layer in enumerate(self.layer_list):
+            if ix == (self.network_depth + 1):  # if last layer, don't apply relu activation
+                x = layer(x)
+            x = torch.relu(layer(x))
         return x

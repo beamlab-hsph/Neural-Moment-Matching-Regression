@@ -29,10 +29,10 @@ class Naive_NN_Trainer(object):
 
         if self.model_name == "naive_neural_net_AY":
             # inputs consist of only A
-            model = Naive_NN_for_demand(input_dim=1)
+            model = Naive_NN_for_demand(input_dim=1, train_params=self.train_params)
         elif self.model_name == "naive_neural_net_AWZY":
             # inputs consist of A, W, and Z (and Z is 2-dimensional)
-            model = Naive_NN_for_demand(input_dim=4)
+            model = Naive_NN_for_demand(input_dim=4, train_params=self.train_params)
         else:
             raise ValueError(f"name {self.model_name} is not known")
 

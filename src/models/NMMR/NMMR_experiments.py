@@ -1,6 +1,8 @@
 import os.path as op
 from typing import Optional, Dict, Any
 from pathlib import Path
+
+import pandas as pd
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
@@ -29,15 +31,18 @@ class NMMR_Trainer(object):
         self.learning_rate = train_params['learning_rate']
         self.loss_name = train_params['loss_name']
 
-        # TODO: send model layers to GPU/CUDA, change model init to accept them (see DFPV trainer)
-
         self.mse_loss = nn.MSELoss()
 
         if self.log_metrics:
             self.writer = SummaryWriter(log_dir=op.join(dump_folder, "tensorboard_log"))
+            self.causal_train_losses = []
+            self.causal_val_losses = []
 
-    def train(self, train_t: PVTrainDataSetTorch, val_t: PVTrainDataSetTorch,
-              kernel_matrix_train, kernel_matrix_val, verbose: int = 0) -> MLP_for_demand:
+    def compute_kernel(self, kernel_inputs):
+
+        return calculate_kernel_matrix(kernel_inputs)
+
+    def train(self, train_t: PVTrainDataSetTorch, val_t: PVTrainDataSetTorch, verbose: int = 0) -> MLP_for_demand:
 
         # inputs consist of (A, W) tuples
         model = MLP_for_demand(input_dim=2, train_params=self.train_params)
@@ -45,8 +50,6 @@ class NMMR_Trainer(object):
         if self.gpu_flg:
             train_t = train_t.to_gpu()
             val_t = val_t.to_gpu()
-            kernel_matrix_train = kernel_matrix_train.cuda()
-            kernel_matrix_val = kernel_matrix_val.cuda()
             model.cuda()
 
         # weight_decay implements L2 penalty
@@ -63,28 +66,41 @@ class NMMR_Trainer(object):
 
                 batch_x = torch.cat((batch_A, batch_W), dim=1)
 
+                kernel_inputs_train = torch.cat((train_t.treatment[indices], train_t.treatment_proxy[indices]), dim=1)
+                kernel_matrix_train = self.compute_kernel(kernel_inputs_train)
+
                 # training loop
                 optimizer.zero_grad()
                 pred_y = model(batch_x)
-                loss = NMMR_loss(pred_y, batch_y, kernel_matrix_train, self.loss_name, indices)
-                loss.backward()
+                causal_loss_train = NMMR_loss(pred_y, batch_y, kernel_matrix_train, self.loss_name)  # indices)
+                causal_loss_train.backward()
                 optimizer.step()
 
+            # at the end of each epoch, log metrics
             if self.log_metrics:
                 with torch.no_grad():
                     preds_train = model(torch.cat((train_t.treatment, train_t.outcome_proxy), dim=1))
                     preds_val = model(torch.cat((val_t.treatment, val_t.outcome_proxy), dim=1))
 
-                    # MSE, loss calculation
+                    # "Observed" MSE (not causal MSE) loss calculation
                     mse_train = self.mse_loss(preds_train, train_t.outcome)
                     mse_val = self.mse_loss(preds_val, val_t.outcome)
-                    self.writer.add_scalar('MSE/train', mse_train, epoch)
-                    self.writer.add_scalar('MSE/val', mse_val, epoch)
+                    self.writer.add_scalar('obs_MSE/train', mse_train, epoch)
+                    self.writer.add_scalar('obs_MSE/val', mse_val, epoch)
 
+                    # compute the full kernel matrix
+                    kernel_inputs_train = torch.cat((train_t.treatment, train_t.treatment_proxy), dim=1)
+                    kernel_inputs_val = torch.cat((val_t.treatment, val_t.treatment_proxy), dim=1)
+                    kernel_matrix_train = self.compute_kernel(kernel_inputs_train)
+                    kernel_matrix_val = self.compute_kernel(kernel_inputs_val)
+
+                    # calculate and log the causal loss (train & validation)
                     causal_loss_train = NMMR_loss(preds_train, train_t.outcome, kernel_matrix_train, self.loss_name)
                     causal_loss_val = NMMR_loss(preds_val, val_t.outcome, kernel_matrix_val, self.loss_name)
-                    self.writer.add_scalar('Causal_loss/train', causal_loss_train, epoch)
-                    self.writer.add_scalar('Causal_loss/val', causal_loss_val, epoch)
+                    self.writer.add_scalar(f'{self.loss_name}/train', causal_loss_train, epoch)
+                    self.writer.add_scalar(f'{self.loss_name}/val', causal_loss_val, epoch)
+                    self.causal_train_losses.append(causal_loss_train)
+                    self.causal_val_losses.append(causal_loss_val)
 
         return model
 
@@ -110,20 +126,9 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
     val_data = preprocessor.preprocess_for_train(val_data_org)
     val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
-    # precompute the training and validation kernel matrices
-    kernel_inputs_train = torch.cat((train_t.treatment, train_t.treatment_proxy), dim=1)
-    kernel_inputs_val = torch.cat((val_data_t.treatment, val_data_t.treatment_proxy), dim=1)
-
-    if torch.cuda.is_available():
-        kernel_inputs_train = kernel_inputs_train.cuda()
-        kernel_inputs_val = kernel_inputs_val.cuda()
-
-    kernel_matrix_train = calculate_kernel_matrix(kernel_inputs_train)
-    kernel_matrix_val = calculate_kernel_matrix(kernel_inputs_val)
-
     # train model
     trainer = NMMR_Trainer(data_config, model_param, one_mdl_dump_dir)
-    model = trainer.train(train_t, val_data_t, kernel_matrix_train, kernel_matrix_val, verbose)
+    model = trainer.train(train_t, val_data_t, verbose)
 
     # prepare test data on the gpu
     if trainer.gpu_flg:
@@ -151,15 +156,27 @@ def NMMR_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, A
         oos_loss = np.mean((pred - test_data_org.structural) ** 2)
         if data_config["name"] in ["kpv", "deaner"]:
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
-    return oos_loss
+
+    if trainer.log_metrics:
+        return oos_loss, pd.DataFrame(
+            data={'causal_loss_train': torch.Tensor(trainer.causal_train_losses[-50:], device="cpu").numpy(),
+                  'causal_loss_val': torch.Tensor(trainer.causal_val_losses[-50:], device="cpu").numpy()})
+    else:
+        return oos_loss
 
 
 if __name__ == "__main__":
     data_config = {"name": "demand", "n_sample": 5000}
     model_param = {"name": "nmmr",
-                   "n_epochs": 1000,
+                   "n_epochs": 50,
                    "batch_size": 1000,
-                   "log_metrics": "False"}
+                   "log_metrics": "True",
+                   "l2_penalty": 0.003,
+                   "learning_rate": 3e-6,
+                   "loss_name": "V_statistic",
+                   "network_width": 10,
+                   "network_depth": 5}
 
-    one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
+    one_mdl_dump_dir = Path(
+        op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
     NMMR_demand_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)
