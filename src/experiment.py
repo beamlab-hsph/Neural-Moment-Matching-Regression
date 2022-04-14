@@ -11,7 +11,7 @@ from src.models.kernelPV.model import kpv_experiments
 from src.models.DFPV.trainer import dfpv_experiments
 from src.models.PMMR.model import pmmr_experiments
 from src.models.CEVAE.trainer import cevae_experiments
-from src.models.NMMR.NMMR_experiments import NMMR_demand_experiment
+from src.models.NMMR.NMMR_experiments import NMMR_experiment
 from src.models.linear_regression.linear_reg_experiments import linear_reg_demand_experiment
 from src.models.naive_neural_net.naive_nn_experiments import naive_nn_demand_experiment
 logger = logging.getLogger()
@@ -27,7 +27,7 @@ def get_run_func(mdl_name: str):
     elif mdl_name == "cevae":
         return cevae_experiments
     elif mdl_name == "nmmr":
-        return NMMR_demand_experiment
+        return NMMR_experiment
     elif mdl_name == "linear_regression_AY" or mdl_name == "linear_regression_AWZY":
         return linear_reg_demand_experiment
     elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY":
