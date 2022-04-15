@@ -1,8 +1,8 @@
 {
     "n_repeat": 20,
     "data": {
-        "name" : "dsprite",
-        "n_sample" : 5000,
+        "name" : "demand",
+        "n_sample" : 50000,
         "preprocess" : "Identity"
     },
     "model": {

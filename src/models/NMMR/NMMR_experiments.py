@@ -50,7 +50,11 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
         test_data_t = test_data_t.to_gpu()
         val_data_t = val_data_t.to_gpu()
 
-    E_w_haw = trainer.predict(model, test_data_t, val_data_t, batch_size=model_config.get('val_batch_size', None))
+    if data_name == "dsprite":
+        E_w_haw = trainer.predict(model, test_data_t, val_data_t, batch_size=model_config.get('val_batch_size', None))
+    elif data_name == "demand":
+        E_w_haw = trainer.predict(model, test_data_t, val_data_t)
+
     pred = preprocessor.postprocess_for_prediction(E_w_haw).detach().numpy()
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 

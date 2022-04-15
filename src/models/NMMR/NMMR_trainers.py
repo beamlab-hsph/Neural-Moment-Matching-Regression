@@ -216,7 +216,6 @@ class NMMR_Trainer_dSpriteExperiment(object):
                 # create n_sample copies of each test image (A), and 588 copies of each proxy image (W)
                 # reshape test and proxy image to 1 x 64 x 64 (so that the model's conv2d layer is happy)
                 test_A = test_data_t.treatment.repeat_interleave(num_W_test, dim=0).reshape(-1, 1, 64, 64)
-                # TODO: figure out whether to use repeat_interleave or repeat below
                 test_W = val_data_t.outcome_proxy.repeat(intervention_array_len, 1).reshape(-1, 1, 64, 64)
                 E_w_haw = mean(model(test_A, test_W).unsqueeze(-1).T)
             else:

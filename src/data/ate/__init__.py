@@ -29,9 +29,9 @@ def generate_train_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTr
 
 def generate_val_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTrainDataSet:
     data_name = data_config["name"]
-    n_sample = data_config["val_sample"]
     if data_name == "dsprite":
-        return generate_train_dsprite(rand_seed=rand_seed, n_sample=n_sample)  # TODO: change n_sample=100 to a dynamic quantity (once testing is done batch-wise)
+        n_sample = data_config["val_sample"]
+        return generate_train_dsprite(rand_seed=rand_seed, n_sample=n_sample)
     if data_name == "demand":
         return generate_train_demand_pv(seed=rand_seed, **data_config)
     else:

@@ -32,57 +32,66 @@ def sort_by_noise_level(file_list):
 
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_demand_noiselevel_figures")
-method_dirs = next(os.walk(data_for_figs))[1]
+# method_dirs = next(os.walk(data_for_figs))[1]
+method_dirs = ['KPV', 'pmmr', 'CEVAE', 'DFPV', 'naivenet_AWZY',
+               'linear_reg_AY', 'linear_reg_AWZY', 'nmmr_u', 'nmmr_v']
 
-for method in method_dirs:
-
-    method_name = method.split()[0].lower()
-    method_path = op.join(data_for_figs, method)
-    noise_dirs = next(os.walk(method_path))[1]
-    noise_dirs = sort_by_noise_level(noise_dirs)
-
-    num_subplots = len(noise_dirs)
-    num_figure_rows = 5
-    num_figure_cols = 4
-    fig, axs = plt.subplots(num_figure_rows, num_figure_cols, sharey=True, figsize=(12, 12))
-
-    dot_plot = False
-    for i, noise_dir in enumerate(noise_dirs):
-        x_coord = 0 + (i // 4)
-        y_coord = 0 + (i % 4)
-
-        noise_level_title = noise_dir
-        method_dirpath = op.join(method_path, noise_dir)
-
-        # Plot the true EY_doA curve and prepare the subplot
-        axs[x_coord, y_coord].plot(ticket_prices_fine, EY_doA_fine, color="black")
-        axs[x_coord, y_coord].set_title(f"{noise_level_title}", fontsize=10)
-
-        for filename in os.listdir(method_dirpath):
-            if filename.endswith('.txt'):
-                strings = open(os.path.join(method_dirpath, filename)).read().split()
-                pred_EY_doA = np.array([float(x) for x in strings])
-                if dot_plot:
-                    axs[x_coord, y_coord].scatter(ticket_prices_coarse, pred_EY_doA)
-                else:
-                    axs[x_coord, y_coord].plot(ticket_prices_coarse, pred_EY_doA, linewidth=1, linestyle='dashed')
-
-    for ax in axs.flat:
-        ax.set(xlabel='Plane ticket price (A)')
-
-    # fig.text(0, 0.5, 'Expected plane ticket sales: E[Y | do(A)]', va='center', rotation='vertical')
-    fig.supylabel('Expected plane ticket sales: E[Y | do(A)]')
-    fig.suptitle(f"Predictions of E[Y | do(A)] by {method_name}")
-    for ax in axs.flat:
-        ax.label_outer()
-
-    plt.tight_layout()
-    plt.show()
+# plt.rc('font', size=18)
+# plt.rc('axes', titlesize=18)
+#
+# for method in method_dirs:
+#
+#     method_name = method.split()[0].lower()
+#     method_path = op.join(data_for_figs, method)
+#     noise_dirs = next(os.walk(method_path))[1]
+#     noise_dirs = sort_by_noise_level(noise_dirs)
+#
+#     num_subplots = len(noise_dirs)
+#     num_figure_rows = 5
+#     num_figure_cols = 4
+#     fig, axs = plt.subplots(num_figure_rows, num_figure_cols, sharey=True, figsize=(15, 15))
+#
+#     dot_plot = False
+#     for i, noise_dir in enumerate(noise_dirs):
+#         x_coord = 0 + (i // 4)
+#         y_coord = 0 + (i % 4)
+#
+#         noise_level_title = noise_dir
+#         method_dirpath = op.join(method_path, noise_dir)
+#
+#         # Plot the true EY_doA curve and prepare the subplot
+#         axs[x_coord, y_coord].plot(ticket_prices_fine, EY_doA_fine, color="black")
+#         axs[x_coord, y_coord].set_title(f"{noise_level_title}")
+#
+#         for filename in os.listdir(method_dirpath):
+#             if filename.endswith('.txt'):
+#                 strings = open(os.path.join(method_dirpath, filename)).read().split()
+#                 pred_EY_doA = np.array([float(x) for x in strings])
+#                 if dot_plot:
+#                     axs[x_coord, y_coord].scatter(ticket_prices_coarse, pred_EY_doA)
+#                 else:
+#                     axs[x_coord, y_coord].plot(ticket_prices_coarse, pred_EY_doA, linewidth=1, linestyle='dashed')
+#
+#     for ax in axs.flat:
+#         ax.set(xlabel='Plane ticket price (A)')
+#
+#     # fig.text(0, 0.5, 'Expected plane ticket sales: E[Y | do(A)]', va='center', rotation='vertical')
+#     fig.supylabel('Expected plane ticket sales: $E[Y^a]$')
+#     fig.suptitle(f"Predictions of $E[Y^a]$ by {method_name}")
+#     for ax in axs.flat:
+#         ax.label_outer()
+#
+#     plt.tight_layout()
+#     plt.show()
 
 
 num_subplots = len(method_dirs)
 num_figure_rows = int(np.ceil(num_subplots / 3))
-fig, axs = plt.subplots(num_figure_rows, 3, sharey=True, sharex=True, figsize=(12, 12))
+fig, axs = plt.subplots(num_figure_rows, 3, sharey=True, sharex=True, figsize=(30, 30), visible=True)
+
+plt.rc('font', size=30)
+plt.rc('axes', titlesize=30)
+plt.rc('ytick', labelsize=20)
 
 # Delete any empty plots on the last row
 if num_subplots % 3 == 1:
@@ -130,12 +139,14 @@ for i, method in enumerate(method_dirs):
                 df = df.append(pd.DataFrame({'abs_error': abs_error, 'noise_level': noise_dir}))
 
     g = sns.stripplot(ax=axs[x_coord, y_coord], x="noise_level", y="abs_error", data=df, jitter=0.2, size=3, alpha=0.5)
-    axs[x_coord, y_coord].set_title(f"{method_name}", fontsize=18)
+    g.set_xticklabels(g.get_xticklabels(), rotation=60)
+    axs[x_coord, y_coord].tick_params(axis='both', labelsize=20)
+    axs[x_coord, y_coord].set_title(f"{method_name}")
     axs[x_coord, y_coord].set_ylim(-80, 80)
     axs[x_coord, y_coord].set(xlabel=None, ylabel=None)
-    g.set_xticklabels(g.get_xticklabels(), rotation=60)
 
-fig.supylabel('Absolute error: E[Y|do(a)] - E_w[h(a, w)]')
+
+fig.supylabel('Absolute error: $| E[Y^a] - E_w[h(a, w)] |$')
 fig.supxlabel('Noise level')
 plt.tight_layout()
 plt.show()

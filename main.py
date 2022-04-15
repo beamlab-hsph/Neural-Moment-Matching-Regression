@@ -22,10 +22,10 @@ else:
     SLACK_URL = None
     NUM_GPU = None
 
-SCRIPT_NAME = Path(__file__).stem
-LOG_DIR = Path.cwd().joinpath(f'logs/{SCRIPT_NAME}')
+# SCRIPT_NAME = Path(__file__).stem
+# LOG_DIR = Path.cwd().joinpath(f'logs/{SCRIPT_NAME}')
 
-logger = logging.getLogger()
+# logger = logging.getLogger()
 
 
 @click.group()
@@ -33,17 +33,20 @@ logger = logging.getLogger()
 @click.option('--debug/--release', default=False)
 @click.pass_context
 def main(ctx, config_path, debug):
-    if(debug):
+    # if debug:
         # Change logging level to debug
-        logger.setLevel(logging.DEBUG)
-        logger.handlers[-1].setLevel(logging.DEBUG)
-        logger.debug("debug")
+        # logger.setLevel(logging.DEBUG)
+        # logger.handlers[-1].setLevel(logging.DEBUG)
+        # logger.debug("debug")
 
-    foldername = str(datetime.datetime.now().strftime("%m-%d-%H-%M-%S"))
-    dump_dir = DUMP_DIR.joinpath(foldername)
-    os.mkdir(dump_dir)
     with open(config_path) as f:
         config = json.load(f)
+
+    model_name = config['model']['name']
+    foldername = str(datetime.datetime.now().strftime("%m-%d-%H-%M-%S"))
+    dump_dir = DUMP_DIR.joinpath(model_name + "_" + foldername)
+    os.mkdir(dump_dir)
+
     ctx.obj["data_dir"] = dump_dir
     ctx.obj["config"] = config
     json.dump(config, open(dump_dir.joinpath("configs.json"), "w"), indent=4)
@@ -67,10 +70,10 @@ def ope(ctx, num_thread):
 
 
 if __name__ == '__main__':
-    configure_logger(SCRIPT_NAME, log_dir=LOG_DIR, webhook_url=SLACK_URL)
-    try:
-        main(obj={})
+    # configure_logger(SCRIPT_NAME, log_dir=LOG_DIR, webhook_url=SLACK_URL)
+    # try:
+    main(obj={})
         # main(['configs/test.json', 'ate'], obj={})
-        logger.critical('===== Script completed successfully! =====')
-    except Exception as e:
-        logger.exception(e)
+        # logger.critical('===== Script completed successfully! =====')
+    # except Exception as e:
+        # logger.exception(e)

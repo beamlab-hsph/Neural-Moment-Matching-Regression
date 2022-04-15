@@ -12,15 +12,19 @@ EY_doA = np.array([cal_structural(a, W_noise) for a in ticket_prices_fine])
 
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_demand_figures")
-method_dirs = next(os.walk(data_for_figs))[1]
+# method_dirs = next(os.walk(data_for_figs))[1]
+method_dirs = ['KPV', 'pmmr', 'CEVAE', 'DFPV', 'naivenet_awzy',
+               'linear_reg_AY', 'linear_reg_AWZY', 'NMMR_U', 'NMMR_V']
 
 sample_sizes_to_plot = [1000, 5000, 10000, 50000]
+font = {'size': 22}
+plt.rc('font', **font)
 
 for n in sample_sizes_to_plot:
 
     num_subplots = len(method_dirs)
     num_figure_rows = int(np.ceil(num_subplots / 3))
-    fig, axs = plt.subplots(num_figure_rows, 3, sharey=True)
+    fig, axs = plt.subplots(num_figure_rows, 3, figsize=(15, 15), sharey=True)
 
     # Delete any empty plots on the last row
     if num_subplots % 3 == 1:
@@ -41,7 +45,7 @@ for n in sample_sizes_to_plot:
 
         # Plot the true EY_doA curve and prepare the subplot
         axs[x_coord, y_coord].plot(ticket_prices_fine, EY_doA, color="black")
-        axs[x_coord, y_coord].set_title(f"{method_name}", fontsize=10)
+        axs[x_coord, y_coord].set_title(f"{method_name}")
 
         if not op.isdir(result_path):
             continue
@@ -61,10 +65,11 @@ for n in sample_sizes_to_plot:
         ax.set(xlabel='Plane ticket price (A)')
 
     # fig.text(0, 0.5, 'Expected plane ticket sales: E[Y | do(A)]', va='center', rotation='vertical')
-    fig.supylabel('Expected plane ticket sales: E[Y | do(A)]')
+    fig.supylabel('Expected plane ticket sales: $E[Y^a]$')
     fig.suptitle(f"Predictions of E[Y | do(A)] by each method (n={n})")
     for ax in axs.flat:
         ax.label_outer()
 
+    plt.setp(axs, ylim=(-10, 120))
     plt.tight_layout()
     plt.show()

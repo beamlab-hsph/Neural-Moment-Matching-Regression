@@ -1,5 +1,5 @@
-import torch
 from src.models.NMMR.kernel_utils import calculate_kernel_matrix_batched
+
 
 def NMMR_loss(model_output, target, kernel_matrix, loss_name: str):  # batch_indices=None):
     residual = target - model_output
@@ -20,7 +20,6 @@ def NMMR_loss(model_output, target, kernel_matrix, loss_name: str):  # batch_ind
 
 
 def NMMR_loss_batched(model_output, target, kernel_inputs, kernel, batch_size: int, loss_name: str):
-    #NMMR_loss_batched(preds_train, train_t.outcome, kernel_inputs_train, rbf_kernel, 3, "U_statistic")
     residual = target - model_output
     n = residual.shape[0]
 
