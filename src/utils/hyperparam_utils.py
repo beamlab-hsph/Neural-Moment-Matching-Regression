@@ -27,15 +27,20 @@ def get_hyperparameter_results_dataframe(dump_dir):
                 one_mdl_dump_dir = one_dump_dir
             combined_param_dict = env_param | mdl_param
             if os.path.exists(one_mdl_dump_dir):
-                tensorboard_dir = os.path.join(one_mdl_dump_dir, 'tensorboard_log')
-                n_epochs = combined_param_dict['n_epochs']
-                for tensorboard_logfile in os.listdir(tensorboard_dir):
-                    tensorboard_filepath = os.path.join(tensorboard_dir, tensorboard_logfile)
-                    temp_df = pd.DataFrame([combined_param_dict])
-                    for event in summary_iterator(tensorboard_filepath):
-                        if event.step == (n_epochs-1):
-                            temp_df['causal_loss_val'] = event.summary.value[0].simple_value
+                # tensorboard_dir = os.path.join(one_mdl_dump_dir, 'tensorboard_log')
+                df = pd.read_csv(os.path.join(one_mdl_dump_dir, 'train_metrics.csv'))
+                max_avg_causal_val_loss = df.groupby('rep_ID').mean().obs_MSE_val.max()  # TODO: select column if it contains string "val"
 
+                # n_epochs = combined_param_dict['n_epochs']
+                # for tensorboard_logfile in os.listdir(tensorboard_dir):
+                #     tensorboard_filepath = os.path.join(tensorboard_dir, tensorboard_logfile)
+                #     temp_df = pd.DataFrame([combined_param_dict])
+                #     for event in summary_iterator(tensorboard_filepath):
+                #         if event.step == (n_epochs-1):
+                #             temp_df['causal_loss_val'] = event.summary.value[0].simple_value
+
+                combined_param_dict['max_avg_val_loss'] = max_avg_causal_val_loss
+                temp_df = pd.DataFrame([combined_param_dict])
                 results_df = pd.concat([results_df, temp_df])
 
     return results_df
@@ -46,11 +51,11 @@ if __name__ == "__main__":
     parser.add_argument('--dump_dir')
     parser.add_argument('--out_dir')
     parser.add_argument('--experiment')
-    args = parser.parse_args()
-    # args = parser.parse_args(['--dump_dir', '/Users/kompa/Downloads/04-06-15-34-49',
-    #                           '--out_dir', '/Users/kompa/Downloads/',
-    #                           '--experiment', 'demand'])
+    # args = parser.parse_args()
+    args = parser.parse_args(['--dump_dir', '/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps/naive_neural_net_AWZY_tune',
+                              '--out_dir', '/Users/dab1963/Downloads',
+                              '--experiment', 'demand'])
 
     results_df = get_hyperparameter_results_dataframe(args.dump_dir)
     results_df.to_csv(op.join(args.out_dir, "hp_results.csv"), index=False)
-    results_df.to_pickle(op.join(args.out_dir, "hp_results.pkl"))
+    # results_df.to_pickle(op.join(args.out_dir, "hp_results.pkl"))
