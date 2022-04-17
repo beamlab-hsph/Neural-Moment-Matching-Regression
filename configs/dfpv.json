@@ -1,10 +1,8 @@
 {
     "n_repeat": 20,
     "data": {
-        "name" : "demand",
-        "n_sample" : 1000,
-        "Z_noise": [1, 2, 4, 8, 16],
-        "W_noise": [1, 16, 64, 150]
+        "name" : "dsprite",
+        "n_sample" : 5000
     },
     "model": {
         "name": "dfpv",

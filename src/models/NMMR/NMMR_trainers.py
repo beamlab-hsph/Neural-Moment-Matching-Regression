@@ -101,11 +101,12 @@ class NMMR_Trainer_DemandExperiment(object):
         return model
 
     @staticmethod
-    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch, n_sample: int):
+    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch):
         # Create a 3-dim array with shape [intervention_array_len, n_samples, 2]
         # This will contain the test values for do(A) chosen by Xu et al. as well as {n_samples} random draws for W
         intervention_array_len = test_data_t.treatment.shape[0]
-        temp1 = test_data_t.treatment.expand(-1, n_sample)
+        num_W_test = val_data_t.outcome_proxy.shape[0]
+        temp1 = test_data_t.treatment.expand(-1, num_W_test)
         temp2 = val_data_t.outcome_proxy.expand(-1, intervention_array_len)
         model_inputs_test = torch.stack((temp1, temp2.T), dim=-1)
 
@@ -203,11 +204,10 @@ class NMMR_Trainer_dSpriteExperiment(object):
         return model
 
     @staticmethod
-    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch, num_W_test: int):
+    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch):
 
-        # Create a 3-dim array with shape [intervention_array_len, n_samples, 2]
-        # This will contain the test values for do(A) chosen by Xu et al. as well as {n_samples} random draws for W
         intervention_array_len = test_data_t.treatment.shape[0]
+        num_W_test = val_data_t.outcome_proxy.shape[0]
 
         # create n_sample copies of each test image (A), and 588 copies of each proxy image (W)
         test_A = test_data_t.treatment.repeat_interleave(num_W_test, dim=0)
@@ -217,17 +217,10 @@ class NMMR_Trainer_dSpriteExperiment(object):
         test_A = test_A.reshape(-1, 1, 64, 64)
         test_W = test_W.reshape(-1, 1, 64, 64)
 
-        # test_A = test_data_t.treatment.reshape(-1, 1, 1, 64, 64).expand(-1, n_sample, -1, -1, -1)
-        # test_W = val_data_t.outcome_proxy.reshape(1, -1, 1, 64, 64).expand(intervention_array_len, -1, -1, -1, -1)
         mean = torch.nn.AvgPool1d(kernel_size=num_W_test, stride=num_W_test)
         E_w_haw = mean(model(test_A, test_W).unsqueeze(-1).T)
 
-        # temp1 = test_data_t.treatment.expand(-1, n_sample)
-        # temp2 = val_data_t.outcome_proxy.expand(-1, intervention_array_len)
-        # model_inputs_test = torch.stack((temp1, temp2.T), dim=-1)
-
         # Compute model's predicted E[Y | do(A)] = E_w[h(a, w)]
         # Note: the mean is taken over the n_sample axis, so we obtain {intervention_array_len} number of expected values
-        # E_w_haw = torch.mean(model(model_inputs_test), dim=1).cpu()
 
         return E_w_haw.T.squeeze(1).cpu()

@@ -50,7 +50,7 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
         test_data_t = test_data_t.to_gpu()
         val_data_t = val_data_t.to_gpu()
 
-    E_w_haw = trainer.predict(model, test_data_t, val_data_t, data_config["num_W_test"])
+    E_w_haw = trainer.predict(model, test_data_t, val_data_t)
     pred = preprocessor.postprocess_for_prediction(E_w_haw).detach().numpy()
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 

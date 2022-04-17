@@ -2,7 +2,7 @@
     "n_repeat": 10,
     "data": {
         "name": "demand",
-        "n_sample": 1000
+        "n_sample": 50000
     },
     "model": {
         "name": "nmmr",

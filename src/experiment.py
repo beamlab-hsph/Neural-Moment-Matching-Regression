@@ -60,7 +60,7 @@ def experiments(configs: Dict[str, Any],
             else:
                 one_mdl_dump_dir = one_dump_dir
 
-            if model_config.get("log_metrics", False):
+            if model_config.get("log_metrics", False) == "True":
                 test_losses = []
                 train_metrics_ls = []
                 for idx in range(n_repeat):
