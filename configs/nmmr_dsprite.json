@@ -1,0 +1,20 @@
+{
+  "n_repeat": 20,
+  "data": {
+    "name": "dsprite",
+    "n_sample": 5000,
+    "val_sample": 2000
+  },
+  "model": {
+    "name": "nmmr",
+    "n_epochs": 5,
+    "batch_size": 256,
+    "val_batch_size": 2000,
+    "log_metrics": "False",
+    "learning_rate": 3e-04,
+    "l2_penalty": 3e-07,
+    "loss_name": "V_statistic",
+    "network_depth": 2,
+    "network_width": 10
+  }
+}

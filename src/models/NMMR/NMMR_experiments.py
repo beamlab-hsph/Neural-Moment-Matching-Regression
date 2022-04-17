@@ -50,7 +50,7 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
         test_data_t = test_data_t.to_gpu()
         val_data_t = val_data_t.to_gpu()
 
-    E_w_haw = trainer.predict(model, test_data_t, val_data_t)
+    E_w_haw = trainer.predict(model, test_data_t, val_data_t, batch_size=model_config.get('val_batch_size', None))
     pred = preprocessor.postprocess_for_prediction(E_w_haw).detach().numpy()
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 
@@ -70,10 +70,11 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
 
 
 if __name__ == "__main__":
-    data_configuration = {"name": "demand", "n_sample": 5000}
+    data_configuration = {"name": "dsprite", "n_sample": 50, "val_sample": 70}
     model_param = {"name": "nmmr",
                    "n_epochs": 50,
-                   "batch_size": 1000,
+                   "batch_size": 256,
+                   "val_batch_size": 50,
                    "log_metrics": "True",
                    "l2_penalty": 0.003,
                    "learning_rate": 3e-6,
@@ -82,5 +83,5 @@ if __name__ == "__main__":
                    "network_depth": 5}
 
     dump_dir = Path(
-        op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
+        op.join("/Users/kompa/PycharmProjects/Neural-Moment-Matching-Regression", "temp_new"))
     NMMR_experiment(data_configuration, model_param, dump_dir, random_seed=41, verbose=0)

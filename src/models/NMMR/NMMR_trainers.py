@@ -112,7 +112,8 @@ class NMMR_Trainer_DemandExperiment(object):
 
         # Compute model's predicted E[Y | do(A)] = E_w[h(a, w)]
         # Note: the mean is taken over the n_sample axis, so we obtain {intervention_array_len} number of expected values
-        E_w_haw = torch.mean(model(model_inputs_test), dim=1)
+        with torch.no_grad():
+            E_w_haw = torch.mean(model(model_inputs_test), dim=1)
 
         return E_w_haw.cpu()
 
@@ -204,21 +205,37 @@ class NMMR_Trainer_dSpriteExperiment(object):
         return model
 
     @staticmethod
-    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch):
+    def predict(model, test_data_t: PVTestDataSetTorch, val_data_t: PVTrainDataSetTorch, batch_size=None):
 
         intervention_array_len = test_data_t.treatment.shape[0]
         num_W_test = val_data_t.outcome_proxy.shape[0]
 
-        # create n_sample copies of each test image (A), and 588 copies of each proxy image (W)
-        test_A = test_data_t.treatment.repeat_interleave(num_W_test, dim=0)
-        test_W = val_data_t.outcome_proxy.repeat_interleave(intervention_array_len, dim=0)
-
-        # reshape test and proxy image to 1 x 64 x 64 (so that the model's conv2d layer is happy)
-        test_A = test_A.reshape(-1, 1, 64, 64)
-        test_W = test_W.reshape(-1, 1, 64, 64)
-
         mean = torch.nn.AvgPool1d(kernel_size=num_W_test, stride=num_W_test)
-        E_w_haw = mean(model(test_A, test_W).unsqueeze(-1).T)
+        with torch.no_grad():
+            if batch_size is None:
+                # create n_sample copies of each test image (A), and 588 copies of each proxy image (W)
+                # reshape test and proxy image to 1 x 64 x 64 (so that the model's conv2d layer is happy)
+                test_A = test_data_t.treatment.repeat_interleave(num_W_test, dim=0).reshape(-1, 1, 64, 64)
+                # TODO: figure out whether to use repeat_interleave or repeat below
+                test_W = val_data_t.outcome_proxy.repeat(intervention_array_len, 1).reshape(-1, 1, 64, 64)
+                E_w_haw = mean(model(test_A, test_W).unsqueeze(-1).T)
+            else:
+                # the number of A's to evaluate each batch
+                a_step = max(1, batch_size//num_W_test)
+                E_w_haw = torch.zeros([1, 1, intervention_array_len])
+                for a_idx in range(0, intervention_array_len, a_step):
+                    temp_A = test_data_t.treatment[a_idx:(a_idx+a_step)].repeat_interleave(num_W_test, dim=0).reshape(-1, 1, 64, 64)
+                    temp_W = val_data_t.outcome_proxy.repeat(a_step, 1).reshape(-1, 1, 64, 64)
+                    # in this case, we're only predicting for a single A, so we have a ton of W's
+                    # therefore, we'll batch this step as well
+                    if a_step == 1:
+                        model_preds = torch.zeros((temp_A.shape[0]))
+                        for temp_idx in range(0, temp_A.shape[0], batch_size):
+                            model_preds[temp_idx:(temp_idx+batch_size)] = model(temp_A[temp_idx:temp_idx+batch_size], temp_W[temp_idx:temp_idx+batch_size]).squeeze()
+                        E_w_haw[0, 0, a_idx] = torch.mean(model_preds)
+                    else:
+                        temp_E_w_haw = mean(model(temp_A, temp_W).unsqueeze(-1).T)
+                        E_w_haw[0, 0, a_idx:(a_idx+a_step)] = temp_E_w_haw[0, 0]
 
         # Compute model's predicted E[Y | do(A)] = E_w[h(a, w)]
         # Note: the mean is taken over the n_sample axis, so we obtain {intervention_array_len} number of expected values
