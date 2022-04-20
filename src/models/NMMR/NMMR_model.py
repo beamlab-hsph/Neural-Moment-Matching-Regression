@@ -23,7 +23,8 @@ class MLP_for_demand(nn.Module):
         for ix, layer in enumerate(self.layer_list):
             if ix == (self.network_depth + 1):  # if last layer, don't apply relu activation
                 x = layer(x)
-            x = torch.relu(layer(x))
+            else:
+                x = torch.relu(layer(x))
 
         return x
 

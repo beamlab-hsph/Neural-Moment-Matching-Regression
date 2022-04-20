@@ -9,9 +9,9 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
-from src.models.NMMR.NMMR_loss import NMMR_loss
+from src.models.NMMR.NMMR_loss import NMMR_loss, NMMR_loss_batched
 from src.models.NMMR.NMMR_model import MLP_for_demand, cnn_for_dsprite
-from src.models.NMMR.kernel_utils import calculate_kernel_matrix
+from src.models.NMMR.kernel_utils import calculate_kernel_matrix, calculate_kernel_matrix_batched, rbf_kernel
 
 
 class NMMR_Trainer_DemandExperiment(object):
@@ -127,6 +127,8 @@ class NMMR_Trainer_dSpriteExperiment(object):
         self.n_sample = self.data_config['n_sample']
         self.n_epochs = train_params['n_epochs']
         self.batch_size = train_params['batch_size']
+        self.val_batch_size = train_params['val_batch_size']
+        self.kernel_batch_size = train_params['kernel_batch_size']
         self.gpu_flg = torch.cuda.is_available()
         self.log_metrics = train_params['log_metrics'] == "True"
         self.l2_penalty = train_params['l2_penalty']
@@ -185,8 +187,6 @@ class NMMR_Trainer_dSpriteExperiment(object):
                     preds_val = model(val_t.treatment.reshape(-1, 1, 64, 64), val_t.outcome_proxy.reshape(-1, 1, 64, 64))
                     kernel_inputs_train = torch.cat((self.A_scale * train_t.treatment, train_t.treatment_proxy), dim=1)
                     kernel_inputs_val = torch.cat((self.A_scale * val_t.treatment, val_t.treatment_proxy), dim=1)
-                    kernel_matrix_train = self.compute_kernel(kernel_inputs_train)
-                    kernel_matrix_val = self.compute_kernel(kernel_inputs_val)
 
                     # "Observed" MSE (not causal MSE) loss calculation
                     mse_train = self.mse_loss(preds_train, train_t.outcome)
@@ -195,8 +195,8 @@ class NMMR_Trainer_dSpriteExperiment(object):
                     self.writer.add_scalar('obs_MSE/val', mse_val, epoch)
 
                     # calculate and log the causal loss (train & validation)
-                    causal_loss_train = NMMR_loss(preds_train, train_t.outcome, kernel_matrix_train, self.loss_name)
-                    causal_loss_val = NMMR_loss(preds_val, val_t.outcome, kernel_matrix_val, self.loss_name)
+                    causal_loss_train = NMMR_loss_batched(preds_train, train_t.outcome, kernel_inputs_train, rbf_kernel, self.kernel_batch_size, self.loss_name)
+                    causal_loss_val = NMMR_loss_batched(preds_val, val_t.outcome, kernel_inputs_val, rbf_kernel, self.kernel_batch_size, self.loss_name)
                     self.writer.add_scalar(f'{self.loss_name}/train', causal_loss_train, epoch)
                     self.writer.add_scalar(f'{self.loss_name}/val', causal_loss_val, epoch)
                     self.causal_train_losses.append(causal_loss_train)

@@ -74,11 +74,12 @@ if __name__ == "__main__":
     model_param = {"name": "nmmr",
                    "n_epochs": 50,
                    "batch_size": 256,
-                   "val_batch_size": 50,
+                   "val_batch_size": 35,
+                   "kernel_batch_size": 30,
                    "log_metrics": "True",
                    "l2_penalty": 0.003,
                    "learning_rate": 3e-6,
-                   "loss_name": "V_statistic",
+                   "loss_name": "U_statistic",
                    "network_width": 10,
                    "network_depth": 5}
 

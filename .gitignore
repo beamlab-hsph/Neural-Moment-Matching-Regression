@@ -1,3 +1,4 @@
 *.pyc
 /dumps/
 /logs/
+/temp_new/
