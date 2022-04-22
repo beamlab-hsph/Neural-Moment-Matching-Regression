@@ -2,19 +2,19 @@
   "n_repeat": 20,
   "data": {
     "name": "dsprite",
-    "n_sample": 5000,
+    "n_sample": [1000, 5000],
     "val_sample": 1000
   },
   "model": {
     "name": "nmmr",
-    "n_epochs": 200,
+    "n_epochs": 500,
     "batch_size": 256,
-    "val_batch_size": 1000,
-    "kernel_batch_size": 100,
+    "val_batch_size": 200,
+    "kernel_batch_size": 10,
     "log_metrics": "True",
-    "learning_rate": 0.003,
+    "learning_rate": 0.00003,
     "l2_penalty": 3e-06,
-    "loss_name": "U_statistic",
+    "loss_name": "V_statistic",
     "network_depth": 2,
     "network_width": 10
   }
