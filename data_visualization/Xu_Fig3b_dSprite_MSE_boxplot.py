@@ -7,12 +7,15 @@ import seaborn as sns
 # Load results
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_dsprite_figures")
-method_dirs = next(os.walk(data_for_figs))[1]
+# method_dirs = next(os.walk(data_for_figs))[1]
+method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle', 'small_nmmr_10Ws', 'small_nmmr_100Ws', 'small_nmmr_1000Ws']
+# method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle']
 
 df_dict = {}
 for method_dir in method_dirs:
     method_dirpath = op.join(data_for_figs, method_dir)
     result_dirs = next(os.walk(method_dirpath))[1]
+
     for result_dir in result_dirs:
         method_name = method_dir.split()[0].lower()
         sample_size = int(result_dir.split(':')[1])
@@ -27,6 +30,9 @@ for method_dir in method_dirs:
 df_dict2 = {}
 for sample_size in df_dict:
     df_dict2[sample_size] = pd.concat(df_dict[sample_size], axis=1, ignore_index=False)
+
+# sort df_dict2 items by increasing sample size (keys)
+df_dict2 = dict(sorted(df_dict2.items()))
 
 # Create MSE boxplots for each sample size
 for sample_size, df in df_dict2.items():
