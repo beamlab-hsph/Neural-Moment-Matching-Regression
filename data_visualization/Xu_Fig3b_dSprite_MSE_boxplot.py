@@ -8,8 +8,8 @@ import seaborn as sns
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_dsprite_figures")
 # method_dirs = next(os.walk(data_for_figs))[1]
-method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle', 'small_nmmr_10Ws', 'small_nmmr_100Ws', 'small_nmmr_1000Ws']
-# method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle']
+# method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle', 'small_nmmr_10Ws', 'small_nmmr_100Ws', 'small_nmmr_1000Ws']
+method_dirs = ['KPV', 'PMMR', 'CEVAE', 'DFPV', 'naivenet_AY', 'naivenet_AWZY', 'NMMR_u_VGGstyle', 'NMMR_v_VGGstyle']
 
 df_dict = {}
 for method_dir in method_dirs:
@@ -38,6 +38,7 @@ df_dict2 = dict(sorted(df_dict2.items()))
 for sample_size, df in df_dict2.items():
     g = sns.boxplot(x="variable", y="value", data=pd.melt(df))
     g.set_ylabel("Out-of-sample MSE", fontsize=16)
+    g.set_ylim(0, 90)
     g.set_xlabel("Method")
     g.set_xticklabels(g.get_xticklabels(), rotation=60)
     g.set_title(f"Causal MSE for Xu's dSprite experiment (n={sample_size})")

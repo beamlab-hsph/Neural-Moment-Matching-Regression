@@ -14,6 +14,7 @@ from src.models.CEVAE.trainer import cevae_experiments
 from src.models.NMMR.NMMR_experiments import NMMR_experiment
 from src.models.linear_regression.linear_reg_experiments import linear_reg_demand_experiment
 from src.models.naive_neural_net.naive_nn_experiments import naive_nn_demand_experiment
+from src.models.twoSLS.twoSLS_experiments import twoSLS_experiment
 logger = logging.getLogger()
 
 
@@ -28,10 +29,12 @@ def get_run_func(mdl_name: str):
         return cevae_experiments
     elif mdl_name == "nmmr":
         return NMMR_experiment
-    elif mdl_name == "linear_regression_AY" or mdl_name == "linear_regression_AWZY":
+    elif mdl_name in ["linear_regression_AY", "linear_regression_AWZY", "linear_regression_AY2", "linear_regression_AWZY2"]:
         return linear_reg_demand_experiment
     elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY":
         return naive_nn_demand_experiment
+    elif mdl_name == "twoSLS":
+        return twoSLS_experiment
     else:
         raise ValueError(f"name {mdl_name} is not known")
 

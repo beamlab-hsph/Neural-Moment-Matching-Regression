@@ -12,9 +12,9 @@ EY_doA = np.array([cal_structural(a, W_noise) for a in ticket_prices_fine])
 
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_demand_figures")
-# method_dirs = next(os.walk(data_for_figs))[1]
-method_dirs = ['KPV', 'pmmr', 'CEVAE', 'DFPV', 'naivenet_awzy',
-               'linear_reg_AY', 'linear_reg_AWZY', 'NMMR_U', 'NMMR_V']
+method_dirs = next(os.walk(data_for_figs))[1]
+# method_dirs = ['KPV', 'pmmr', 'CEVAE', 'linear_reg_AWZY', 'naivenet_awzy', 'DFPV', 'NMMR_U', 'NMMR_V',
+#                'linear_reg_AY2', 'linear_reg_AWZY2']
 
 sample_sizes_to_plot = [1000, 5000, 10000, 50000]
 font = {'size': 22}

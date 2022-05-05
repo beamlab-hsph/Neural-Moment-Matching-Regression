@@ -8,6 +8,7 @@ from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
 from src.data.ate import generate_train_data_ate, generate_test_data_ate, get_preprocessor_ate
 from sklearn import linear_model
 from src.utils.make_AWZ_test import make_AWZ_test
+from src.utils.make_AWZ2_test import make_AWZ2_test
 
 
 def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, Any],
@@ -36,22 +37,42 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
     # train model
     model = linear_model.LinearRegression()
 
+    Y = train_t.outcome.reshape(-1, 1)
     if model_name == "linear_regression_AY":
-        X = train_t.treatment.reshape(-1, 1)
-        y = train_t.outcome.reshape(-1, 1)
-        model.fit(X, y)
+        features = train_t.treatment.reshape(-1, 1)
+        model.fit(features, Y)
 
         # get model predictions on do(A) intervention values
         pred = model.predict(test_data.treatment.reshape(-1, 1))
 
     elif model_name == "linear_regression_AWZY":
-        AWZ = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1)
-        Y = train_t.outcome.reshape(-1, 1)
-        model.fit(AWZ, Y)
+        features = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1)
+        model.fit(features, Y)
 
         # get model predictions on do(A) intervention values
         AWZ_test = make_AWZ_test(test_data_t, val_data_t)
         pred = [np.mean(model.predict(AWZ_test[i, :, :])) for i in range(AWZ_test.shape[0])]
+
+    elif model_name == "linear_regression_AY2":
+        features = torch.cat((train_t.treatment, train_t.treatment ** 2), dim=1)
+        model.fit(features, Y)
+
+        # get model predictions on do(A) intervention values
+        test_features = np.concatenate((test_data.treatment, test_data.treatment ** 2), axis=-1)
+        pred = model.predict(test_features)
+
+    elif model_name == "linear_regression_AWZY2":
+        features = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy,
+                              train_t.treatment**2, train_t.outcome_proxy**2, train_t.treatment_proxy**2,
+                              train_t.treatment * train_t.outcome_proxy,
+                              train_t.treatment * train_t.treatment_proxy,
+                              train_t.outcome_proxy * train_t.treatment_proxy,
+                              train_t.treatment_proxy[:, 0:1] * train_t.treatment_proxy[:, 1:2]), dim=-1)
+        model.fit(features, Y)
+
+        # get model predictions on do(A) intervention values
+        AWZ2_test = make_AWZ2_test(test_data_t, val_data_t)
+        pred = [np.mean(model.predict(AWZ2_test[i, :, :])) for i in range(AWZ2_test.shape[0])]
 
     else:
         raise ValueError(f"name {model_name} is not known")

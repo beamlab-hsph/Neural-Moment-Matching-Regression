@@ -17,6 +17,12 @@ class PVTestDataSet(NamedTuple):
     structural: Optional[np.ndarray]
 
 
+class RHCTestDataSet(NamedTuple):
+    treatment: np.ndarray
+    outcome_proxy: np.ndarray
+    backdoor: np.ndarray
+
+
 class PVTrainDataSetTorch(NamedTuple):
     treatment: torch.Tensor
     treatment_proxy: torch.Tensor

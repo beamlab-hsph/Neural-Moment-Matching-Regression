@@ -12,7 +12,7 @@ data_for_figs = op.join(cwd, "data_for_demand_figures")
 
 # order the method dirs from data_for_demand_figures/ as you wish for the plot
 method_dirs = ['KPV', 'pmmr', 'CEVAE', 'DFPV', 'naivenet_ay', 'naivenet_awzy',
-               'linear_reg_AY', 'linear_reg_AWZY', 'NMMR_U', 'NMMR_V']
+               'linear_reg_AY', 'linear_reg_AWZY', 'NMMR_U', 'NMMR_V', 'linear_reg_AY2', 'linear_reg_AWZY2', 'twoSLS']
 
 df_dict = {}
 for method_dir in method_dirs:

@@ -7,6 +7,11 @@
         "W_noise": [0, 0.01, 0.1, 0.5, 1, 16, 64, 150]
     },
     "model": {
-        "name": "linear_regression_AWZY"
+        "name": "cevae",
+        "n_epoch": 1000,
+        "weight_decay": 0.0001,
+        "n_learning_sample": 10,
+        "hidden_dim": 20,
+        "early_stop": 5
     }
 }

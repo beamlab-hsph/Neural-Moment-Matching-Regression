@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, Union
 
 from sklearn.preprocessing import StandardScaler
 
@@ -7,8 +7,9 @@ from src.data.ate.kpv_experiment_sim import generate_train_kpv_experiment, gener
 from src.data.ate.deaner_experiment import generate_train_deaner_experiment, generate_test_deaner_experiment
 from src.data.ate.demand_pv import generate_test_demand_pv, generate_train_demand_pv
 from src.data.ate.dsprite import generate_train_dsprite, generate_test_dsprite
-from src.data.ate.data_class import PVTestDataSet, PVTrainDataSet
+from src.data.ate.data_class import PVTestDataSet, PVTrainDataSet, RHCTestDataSet
 from src.data.ate.cevae_experiment import generate_train_cevae_experiment, generate_test_cevae_experiment
+from src.data.ate.rhc_experiment import generate_train_rhc, generate_val_rhc, generate_test_rhc
 
 
 def generate_train_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTrainDataSet:
@@ -23,6 +24,8 @@ def generate_train_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTr
         return generate_train_cevae_experiment(rand_seed=rand_seed, **data_config)
     elif data_name == "deaner":
         return generate_train_deaner_experiment(seed=rand_seed, **data_config)
+    elif data_name == 'rhc':
+        return generate_train_rhc(**data_config)  # no random seed needed for this one
     else:
         raise ValueError(f"data name {data_name} is not valid")
 
@@ -32,13 +35,15 @@ def generate_val_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTrai
     if data_name == "dsprite":
         n_sample = data_config["val_sample"]
         return generate_train_dsprite(rand_seed=rand_seed, n_sample=n_sample)
-    if data_name == "demand":
+    elif data_name == "demand":
         return generate_train_demand_pv(seed=rand_seed, **data_config)
+    elif data_name == "rhc":
+        return generate_val_rhc(**data_config)
     else:
         raise ValueError(f"data name {data_name} is not valid")
 
 
-def generate_test_data_ate(data_config: Dict[str, Any]) -> Optional[PVTestDataSet]:
+def generate_test_data_ate(data_config: Dict[str, Any]) -> Optional[Union[PVTestDataSet, RHCTestDataSet]]:
     data_name = data_config["name"]
     if data_name == "kpv":
         return generate_test_kpv_experiment()
@@ -50,6 +55,8 @@ def generate_test_data_ate(data_config: Dict[str, Any]) -> Optional[PVTestDataSe
         return generate_test_cevae_experiment()
     elif data_name == "deaner":
         return generate_test_deaner_experiment(id=data_config["id"])
+    elif data_name == "rhc":
+        return generate_test_rhc(**data_config)
     else:
         raise ValueError(f"data name {data_name} is not valid")
 

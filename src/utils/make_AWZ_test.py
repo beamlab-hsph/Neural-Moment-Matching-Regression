@@ -25,6 +25,7 @@ def make_AWZ_test(test_data_t: PVTestDataSetTorch,
     num_val_samples = val_data_t.treatment.shape[0]
 
     # tile A, W and Z to create a tensor with shape (intervention_array_len, n_samples, 4)
+    # '4' because A and W are 1-dim, but Z is 2-dim
     temp_A = test_data_t.treatment.expand(-1, num_val_samples)
     temp_W = val_data_t.outcome_proxy.expand(-1, intervention_array_len)
     temp_AW = torch.stack((temp_A, temp_W.T), dim=-1)
