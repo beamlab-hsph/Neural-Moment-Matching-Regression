@@ -82,7 +82,6 @@ def generate_test_rhc(use_all_X: bool) -> RHCTestDataSet:
     `use_all_X` is True, and (574, 22) otherwise.
     """
 
-
     # load the test split
     test_split = pd.read_csv(op.join(DATA_PATH, "rhc_test.csv"))
 
@@ -99,6 +98,6 @@ def generate_test_rhc(use_all_X: bool) -> RHCTestDataSet:
     W_ph1 = np.expand_dims(test_split['ph1'].to_numpy(), axis=-1)
     W_hema1 = np.expand_dims(test_split['hema1'].to_numpy(), axis=-1)
 
-    return RHCTestDataSet(treatment=np.array([0, 1]),
+    return RHCTestDataSet(treatment=np.array([[0], [1]]),
                           outcome_proxy=np.c_[W_ph1, W_hema1],
                           backdoor=test_X)

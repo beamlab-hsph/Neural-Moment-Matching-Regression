@@ -70,10 +70,6 @@ def ope(ctx, num_thread):
 
 
 if __name__ == '__main__':
-    # configure_logger(SCRIPT_NAME, log_dir=LOG_DIR, webhook_url=SLACK_URL)
-    # try:
     main(obj={})
-    # main(['configs/test.json', 'ate'], obj={})
-        # logger.critical('===== Script completed successfully! =====')
-    # except Exception as e:
-        # logger.exception(e)
+    # for debugging: you can pass in a desired config without the command-line like:
+    # main(['configs/your_config_file.json', 'ate'], obj={})

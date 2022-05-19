@@ -25,7 +25,7 @@ def generate_train_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTr
     elif data_name == "deaner":
         return generate_train_deaner_experiment(seed=rand_seed, **data_config)
     elif data_name == 'rhc':
-        return generate_train_rhc(**data_config)  # no random seed needed for this one
+        return generate_train_rhc(data_config['use_all_X'].lower() == "true")  # no random seed needed for this one
     else:
         raise ValueError(f"data name {data_name} is not valid")
 
@@ -38,7 +38,7 @@ def generate_val_data_ate(data_config: Dict[str, Any], rand_seed: int) -> PVTrai
     elif data_name == "demand":
         return generate_train_demand_pv(seed=rand_seed, **data_config)
     elif data_name == "rhc":
-        return generate_val_rhc(**data_config)
+        return generate_val_rhc(data_config['use_all_X'].lower() == "true")
     else:
         raise ValueError(f"data name {data_name} is not valid")
 
@@ -56,7 +56,7 @@ def generate_test_data_ate(data_config: Dict[str, Any]) -> Optional[Union[PVTest
     elif data_name == "deaner":
         return generate_test_deaner_experiment(id=data_config["id"])
     elif data_name == "rhc":
-        return generate_test_rhc(**data_config)
+        return generate_test_rhc(data_config['use_all_X'].lower() == "true")
     else:
         raise ValueError(f"data name {data_name} is not valid")
 

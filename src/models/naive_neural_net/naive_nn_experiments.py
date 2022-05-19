@@ -69,19 +69,3 @@ def naive_nn_experiment(data_config: Dict[str, Any], model_param: Dict[str, Any]
                   'obs_MSE_val': torch.Tensor(trainer.val_losses[-50:], device="cpu").numpy()})
     else:
         return oos_loss
-
-
-if __name__ == "__main__":
-    data_config = {"name": "demand", "n_sample": 50}
-    model_param = {
-        "name": "naive_neural_net_AWZY",
-        "n_epochs": 10,
-        "batch_size": 10,
-        "learning_rate": 0.00003,
-        "l2_penalty": 3e-6,
-        'network_width': 10,
-        'network_depth': 2
-    }
-
-    one_mdl_dump_dir = Path(op.join("/Users/kompa/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
-    naive_nn_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)

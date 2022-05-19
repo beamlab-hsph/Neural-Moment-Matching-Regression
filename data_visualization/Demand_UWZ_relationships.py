@@ -6,8 +6,7 @@ from src.data.ate.demand_pv import cal_structural, psi, cal_outcome, generatate_
 
 # Create a mock training dataset (to show the training distribution of A and Y)
 n_samples = 1000
-demand, cost1, cost2, price, views, outcom = generatate_demand_core(n_sample=n_samples, rng=default_rng(seed=42))
-
+demand, cost1, cost2, price, views, outcome = generatate_demand_core(n_sample=n_samples, rng=default_rng(seed=42))
 
 plt.scatter(cost1, demand, alpha=0.5, label="$Z_1$")
 plt.scatter(cost2, demand, alpha=0.5, label="$Z_2$")

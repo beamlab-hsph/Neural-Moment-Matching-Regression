@@ -1,15 +1,14 @@
 # Neural Moment Matching Regression
-Code for an upcoming NeurIPS submission   
+Code for a NeurIPS 2022 submission   
 
 ## How to Run Experiments
 
-1. Install all dependencies
+1. Install all Python dependencies
    ```
    pip install -r requirements.txt
    ```
-2. Create empty directories (if needed) for logging
+2. Create empty directories (if needed) for capturing results 
    ```
-   mkdir logs
    mkdir dumps
    ```
 3. Run experiments

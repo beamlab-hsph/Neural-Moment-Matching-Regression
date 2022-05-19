@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 
-class MLP_for_demand(nn.Module):
+class MLP_for_NMMR(nn.Module):
     
     def __init__(self, input_dim, train_params):
-        super(MLP_for_demand, self).__init__()
+        super(MLP_for_NMMR, self).__init__()
 
         self.train_params = train_params
         self.network_width = train_params["network_width"]

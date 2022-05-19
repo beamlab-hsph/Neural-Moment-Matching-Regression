@@ -51,10 +51,7 @@ if __name__ == "__main__":
     parser.add_argument('--dump_dir')
     parser.add_argument('--out_dir')
     parser.add_argument('--experiment')
-    # args = parser.parse_args()
-    args = parser.parse_args(['--dump_dir', '/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps/naive_neural_net_AWZY_tune',
-                              '--out_dir', '/Users/dab1963/Downloads',
-                              '--experiment', 'demand'])
+    args = parser.parse_args()
 
     results_df = get_hyperparameter_results_dataframe(args.dump_dir)
     results_df.to_csv(op.join(args.out_dir, "hp_results.csv"), index=False)

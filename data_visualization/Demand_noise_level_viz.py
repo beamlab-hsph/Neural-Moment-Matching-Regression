@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from src.data.ate.demand_pv import cal_structural, psi, cal_outcome
+from src.data.ate.demand_pv import cal_structural
+from src.utils.misc_utils import sort_by_noise_level
 
 # Create the test values for A (ticket price) and Y (ticket sales)
 ticket_prices_fine = np.linspace(10, 30, 1000)
@@ -13,22 +14,6 @@ ticket_prices_coarse = np.linspace(10, 30, 10)
 W_noise = 1  # just use 1 for plotting the smooth black test curve (for data viz)
 EY_doA_fine = np.array([cal_structural(a, W_noise) for a in ticket_prices_fine])
 EY_doA_coarse = np.array([cal_structural(a, W_noise) for a in ticket_prices_coarse])
-
-
-# sort method_dirs by Z_noise, then by W_noise within that
-def sort_by_noise_level(file_list):
-    """ Expects filenames to be of the form Z_noise:3-W_noise:1
-    where the order of Z_noise and W_noise can change, and their
-    respective values can change, but they must be separated by a hyphen
-    """
-
-    # split on hyphen key.split("-") and sort to ensure Z noise comes first, then W
-    convert = lambda filename: sorted(filename.split("-"), reverse=True)
-
-    # drop textual characters, leaving only numeric noise levels (Z's then W's noise level) to use for sorting
-    my_key = lambda key: [float(''.join(i for i in s if i.isdigit() or i == '.')) for s in convert(key)]
-    return sorted(file_list, key=my_key)
-
 
 cwd = os.getcwd()
 data_for_figs = op.join(cwd, "data_for_demand_noiselevel_figures")
@@ -118,9 +103,9 @@ for i, method in enumerate(method_dirs):
     for j, noise_dir in enumerate(noise_dirs):
         noise_dirpath = op.join(method_path, noise_dir)
 
-        current_noise_levels = re.findall(r'\d+', noise_dir)
-        current_Z_noise = int(current_noise_levels[0])
-        current_W_noise = int(current_noise_levels[1])
+        current_noise_levels = re.findall(r'(\d+(?:\.\d+)?)', noise_dir)
+        current_Z_noise = float(current_noise_levels[0])
+        current_W_noise = float(current_noise_levels[1])
 
         # if noise_dir not on diagonal, continue
         if current_Z_noise > Z_noise and current_W_noise > W_noise:

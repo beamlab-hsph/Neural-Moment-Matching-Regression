@@ -7,8 +7,9 @@ import pandas as pd
 import torch
 
 from src.data.ate import generate_train_data_ate, generate_val_data_ate, generate_test_data_ate, get_preprocessor_ate
-from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
-from src.models.NMMR.NMMR_trainers import NMMR_Trainer_DemandExperiment, NMMR_Trainer_dSpriteExperiment
+from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch, RHCTestDataSetTorch
+from src.models.NMMR.NMMR_trainers import NMMR_Trainer_DemandExperiment, NMMR_Trainer_dSpriteExperiment, \
+    NMMR_Trainer_RHCExperiment
 
 
 def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
@@ -19,27 +20,29 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
     np.random.seed(random_seed)
 
     # generate train data
-    train_data_org = generate_train_data_ate(data_config=data_config, rand_seed=random_seed)
-    val_data_org = generate_val_data_ate(data_config=data_config, rand_seed=random_seed + 1)
-    test_data_org = generate_test_data_ate(data_config=data_config)
+    train_data = generate_train_data_ate(data_config=data_config, rand_seed=random_seed)
+    val_data = generate_val_data_ate(data_config=data_config, rand_seed=random_seed + 1)
+    test_data = generate_test_data_ate(data_config=data_config)
 
-    # preprocess data
-    preprocessor = get_preprocessor_ate(data_config.get("preprocess", "Identity"))
-    train_data = preprocessor.preprocess_for_train(train_data_org)
+    # convert datasets to Torch (for GPU runtime)
     train_t = PVTrainDataSetTorch.from_numpy(train_data)
-    test_data = preprocessor.preprocess_for_test_input(test_data_org)
-    test_data_t = PVTestDataSetTorch.from_numpy(test_data)
-    val_data = preprocessor.preprocess_for_train(val_data_org)
     val_data_t = PVTrainDataSetTorch.from_numpy(val_data)
 
-    # retrieve the trainer for this experiment
     data_name = data_config.get("name", None)
+    if data_name in ['dsprite', 'demand']:
+        test_data_t = PVTestDataSetTorch.from_numpy(test_data)
+    elif data_name == 'rhc':
+        test_data_t = RHCTestDataSetTorch.from_numpy(test_data)
+    else:
+        raise KeyError(f"Your data config contained name = {data_name}, but must be one of [dsprite, demand, rhc]")
+
+    # retrieve the trainer for this experiment
     if data_name == "dsprite":
         trainer = NMMR_Trainer_dSpriteExperiment(data_config, model_config, random_seed, one_mdl_dump_dir)
     elif data_name == "demand":
         trainer = NMMR_Trainer_DemandExperiment(data_config, model_config, random_seed, one_mdl_dump_dir)
-    else:
-        raise KeyError("No key 'name' found in data_config.")
+    elif data_name == 'rhc':
+        trainer = NMMR_Trainer_RHCExperiment(data_config, model_config, random_seed, one_mdl_dump_dir)
 
     # train model
     model = trainer.train(train_t, val_data_t, verbose)
@@ -51,19 +54,21 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
         val_data_t = val_data_t.to_gpu()
 
     if data_name == "dsprite":
-        E_w_haw = trainer.predict(model, test_data_t, val_data_t, batch_size=model_config.get('val_batch_size', None))
+        E_wx_hawx = trainer.predict(model, test_data_t, val_data_t, batch_size=model_config.get('val_batch_size', None))
     elif data_name == "demand":
-        E_w_haw = trainer.predict(model, test_data_t, val_data_t)
+        E_wx_hawx = trainer.predict(model, test_data_t, val_data_t)
+    elif data_name == "rhc":
+        E_wx_hawx = trainer.predict(model, test_data_t)
 
-    pred = preprocessor.postprocess_for_prediction(E_w_haw).detach().numpy()
+    pred = E_wx_hawx.detach().numpy()
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
 
-    if test_data.structural is not None:
-        # test_data_org.structural is equivalent to EY_doA
-        np.testing.assert_array_equal(pred.shape, test_data_org.structural.shape)
-        oos_loss = np.mean((pred - test_data_org.structural) ** 2)
-        if data_config["name"] in ["kpv", "deaner"]:
-            oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
+    if hasattr(test_data, 'structural'):
+        # test_data.structural is equivalent to EY_doA
+        np.testing.assert_array_equal(pred.shape, test_data.structural.shape)
+        oos_loss = np.mean((pred - test_data.structural) ** 2)
+    else:
+        oos_loss = None
 
     if trainer.log_metrics:
         return oos_loss, pd.DataFrame(
@@ -71,22 +76,3 @@ def NMMR_experiment(data_config: Dict[str, Any], model_config: Dict[str, Any],
                   'causal_loss_val': torch.Tensor(trainer.causal_val_losses[-50:], device="cpu").numpy()})
     else:
         return oos_loss
-
-
-if __name__ == "__main__":
-    data_configuration = {"name": "dsprite", "n_sample": 50, "val_sample": 70}
-    model_param = {"name": "nmmr",
-                   "n_epochs": 50,
-                   "batch_size": 256,
-                   "val_batch_size": 35,
-                   "kernel_batch_size": 30,
-                   "log_metrics": "True",
-                   "l2_penalty": 0.003,
-                   "learning_rate": 3e-6,
-                   "loss_name": "U_statistic",
-                   "network_width": 10,
-                   "network_depth": 5}
-
-    dump_dir = Path(
-        op.join("/Users/kompa/PycharmProjects/Neural-Moment-Matching-Regression", "temp_new"))
-    NMMR_experiment(data_configuration, model_param, dump_dir, random_seed=41, verbose=0)

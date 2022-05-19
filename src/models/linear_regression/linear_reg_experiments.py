@@ -86,11 +86,3 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
             oos_loss = np.mean(np.abs(pred.numpy() - test_data_org.structural.squeeze()))
     np.savetxt(one_mdl_dump_dir.joinpath(f"{random_seed}.pred.txt"), pred)
     return oos_loss
-
-
-if __name__ == "__main__":
-    data_config = {"name": "demand", "n_sample": 5000}
-    model_param = {"name": "linear_regression_AWZY"}
-
-    one_mdl_dump_dir = Path(op.join("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/dumps", "temp_new"))
-    linear_reg_demand_experiment(data_config, model_param, one_mdl_dump_dir, random_seed=41, verbose=0)

@@ -3,7 +3,6 @@ from pathlib import Path
 import os
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
 import logging
 
 from src.utils import grid_search_dict
@@ -13,7 +12,7 @@ from src.models.PMMR.model import pmmr_experiments
 from src.models.CEVAE.trainer import cevae_experiments
 from src.models.NMMR.NMMR_experiments import NMMR_experiment
 from src.models.linear_regression.linear_reg_experiments import linear_reg_demand_experiment
-from src.models.naive_neural_net.naive_nn_experiments import naive_nn_demand_experiment
+from src.models.naive_neural_net.naive_nn_experiments import naive_nn_experiment
 from src.models.twoSLS.twoSLS_experiments import twoSLS_experiment
 logger = logging.getLogger()
 
@@ -32,7 +31,7 @@ def get_run_func(mdl_name: str):
     elif mdl_name in ["linear_regression_AY", "linear_regression_AWZY", "linear_regression_AY2", "linear_regression_AWZY2"]:
         return linear_reg_demand_experiment
     elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY":
-        return naive_nn_demand_experiment
+        return naive_nn_experiment
     elif mdl_name == "twoSLS":
         return twoSLS_experiment
     else:
@@ -68,11 +67,13 @@ def experiments(configs: Dict[str, Any],
                 train_metrics_ls = []
                 for idx in range(n_repeat):
                     test_loss, train_metrics = run_func(env_param, mdl_param, one_mdl_dump_dir, idx, verbose)
-                    test_losses.append(test_loss)
                     train_metrics['rep_ID'] = idx
                     train_metrics_ls.append(train_metrics)
+                    if test_loss is not None:
+                        test_losses.append(test_loss)
 
-                np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))
+                if test_losses:
+                    np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))
                 metrics_df = pd.concat(train_metrics_ls).reset_index()
                 metrics_df.rename(columns={'index': 'epoch_num'}, inplace=True)
                 metrics_df.to_csv(one_mdl_dump_dir.joinpath("train_metrics.csv"), index=False)
@@ -80,8 +81,7 @@ def experiments(configs: Dict[str, Any],
                 test_losses = []
                 for idx in range(n_repeat):
                     test_loss = run_func(env_param, mdl_param, one_mdl_dump_dir, idx, verbose)
-                    test_losses.append(test_loss)
-
-                np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))
-
-        logger.critical(f"{dump_name} ended")
+                    if test_loss is not None:
+                        test_losses.append(test_loss)
+                if test_losses:
+                    np.savetxt(one_mdl_dump_dir.joinpath("result.csv"), np.array(test_losses))

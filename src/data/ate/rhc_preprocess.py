@@ -6,9 +6,8 @@ from sklearn import preprocessing
 
 RANDOM_SEED = 42
 
-# os.chdir("../../../data/")
-# df = pd.read_csv("rhc.csv")
-df = pd.read_csv("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/data/right_heart_catheterization/rhc_raw.csv")
+os.chdir("../../../data/right_heart_catheterization")
+df = pd.read_csv("rhc_raw.csv")
 
 # Subdivide the columns into their data types/variable category
 columns = ['swang1', 'pafi1', 'paco21', 'ph1', 'hema1', 't3d30',
