@@ -29,7 +29,7 @@ def get_hyperparameter_results_dataframe(dump_dir):
             if os.path.exists(one_mdl_dump_dir):
                 # tensorboard_dir = os.path.join(one_mdl_dump_dir, 'tensorboard_log')
                 df = pd.read_csv(os.path.join(one_mdl_dump_dir, 'train_metrics.csv'))
-                max_avg_causal_val_loss = df.groupby('rep_ID').mean().obs_MSE_val.max()  # TODO: select column if it contains string "val"
+                max_avg_causal_val_loss = df.groupby('rep_ID').mean().obs_MSE_val.max()
 
                 # n_epochs = combined_param_dict['n_epochs']
                 # for tensorboard_logfile in os.listdir(tensorboard_dir):

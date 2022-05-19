@@ -98,7 +98,6 @@ class Naive_NN_Trainer_DemandExperiment(object):
             pred = model(test_data_t.treatment).cpu().detach().numpy()
 
         elif model.train_params['name'] == "naive_neural_net_AWZY":
-            # TODO: make sure this function works with dsprite data
             AWZ_test = make_AWZ_test(test_data_t, val_data_t)
             pred = torch.mean(model(AWZ_test), dim=1).cpu().detach().numpy()
 

@@ -40,7 +40,7 @@ def get_run_func(mdl_name: str):
 
 def experiments(configs: Dict[str, Any],
                 dump_dir: Path,
-                num_cpus: int, num_gpu: Optional[int]):
+                num_cpus: int):
 
     data_config = configs["data"]
     model_config = configs["model"]

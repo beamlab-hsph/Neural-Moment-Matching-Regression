@@ -1,0 +1,35 @@
+{
+    "n_repeat": 10,
+    "data": {
+        "name": "demand",
+        "n_sample": 5000
+    },
+    "model": {
+        "name": "nmmr",
+        "n_epochs": 3000,
+        "batch_size": 1000,
+        "log_metrics": "True",
+        "learning_rate": [
+            3e-05,
+            0.0003,
+            0.003
+        ],
+        "l2_penalty": [
+            3e-07,
+            3e-06,
+            3e-05
+        ],
+        "loss_name": ["U_statistic"],
+        "network_depth": [
+            2,
+            3,
+            4,
+            5
+        ],
+        "network_width": [
+            10,
+            40,
+            80
+        ]
+    }
+}

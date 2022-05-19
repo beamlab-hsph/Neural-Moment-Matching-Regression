@@ -1,0 +1,23 @@
+{
+    "n_repeat": 20,
+    "data": {
+        "name" : "demand",
+        "n_sample" : 5000,
+        "Z_noise": [0, 0.01, 0.1, 0.5, 1, 2, 4, 8, 16],
+        "W_noise": [0, 0.01, 0.1, 0.5, 1, 16, 64, 150]
+    },
+    "model": {
+        "name": "dfpv",
+        "lam1": 0.1,
+        "lam2": 0.1,
+        "stage1_iter": 20,
+        "stage2_iter": 1,
+        "n_epoch": 100,
+        "split_ratio": 0.5,
+        "treatment_weight_decay": 0.1,
+        "treatment_proxy_weight_decay": 0.1,
+        "outcome_proxy_weight_decay": 0.1,
+        "backdoor_weight_decay": 0.0,
+        "data_scaling": true
+    }
+}
