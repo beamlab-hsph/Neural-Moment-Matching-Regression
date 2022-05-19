@@ -6,16 +6,15 @@
     "val_sample": 1000
   },
   "model": {
-    "name": "nmmr",
-    "n_epochs": 500,
-    "batch_size": 256,
-    "val_batch_size": 200,
-    "kernel_batch_size": 10,
-    "log_metrics": "True",
-    "learning_rate": 0.00003,
-    "l2_penalty": 3e-06,
-    "loss_name": "V_statistic",
-    "network_depth": 2,
-    "network_width": 10
+      "name": "nmmr",
+      "n_epochs": 500,
+      "batch_size": 256,
+      "val_batch_size": 200,
+      "kernel_batch_size": 10,
+      "log_metrics": "True",
+      "learning_rate": 3e-05,
+      "l2_penalty": 3e-07,
+      "loss_name": "V_statistic",
+      "fc_factor": 0.5
   }
 }

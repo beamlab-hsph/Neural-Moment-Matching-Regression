@@ -13,8 +13,6 @@
     "kernel_batch_size": 10,
     "log_metrics": "True",
     "learning_rate": 0.00003,
-    "l2_penalty": 3e-06,
-    "network_depth": 2,
-    "network_width": 10
+    "l2_penalty": 3e-06
   }
 }
