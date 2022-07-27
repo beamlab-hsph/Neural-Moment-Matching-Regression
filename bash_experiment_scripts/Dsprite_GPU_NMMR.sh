@@ -8,5 +8,7 @@
 #SBATCH -e slurm_logs/Dsprite_GPU_%j.err                 # File to which STDERR will be written, including job ID (%j)
 #SBATCH --account=beam_ab455
 
-python main.py configs/nmmr_u_dsprite.json ate
-python main.py configs/nmmr_v_dsprite.json ate
+#python main.py configs/nmmr_u_dsprite.json ate
+#python main.py configs/nmmr_v_dsprite.json ate
+
+python main.py configs/figure3_config/dfpv_cnn_figure3.json ate

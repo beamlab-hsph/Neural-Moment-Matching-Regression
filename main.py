@@ -14,7 +14,7 @@ SRC_DIR = Path.cwd().joinpath('src')
 
 @click.group()
 @click.argument('config_path', type=click.Path(exists=True))
-@click.option('--debug/--release', default=False)
+#@click.option('--debug/--release', default=False)
 @click.pass_context
 def main(ctx, config_path):
     with open(config_path) as f:
@@ -43,4 +43,4 @@ def ate(ctx, num_thread):
 if __name__ == '__main__':
     main(obj={})
     # for debugging: you can pass in a desired config without the command-line like:
-    # main(['configs/your_config_file.json', 'ate'], obj={})
+    #main(['configs/figure3_config/dfpv_cnn_figure3.json', 'ate'], obj={})

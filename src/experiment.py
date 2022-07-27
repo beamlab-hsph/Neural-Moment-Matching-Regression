@@ -8,6 +8,7 @@ import logging
 from src.utils import grid_search_dict
 from src.models.kernelPV.model import kpv_experiments
 from src.models.DFPV.trainer import dfpv_experiments
+from src.models.DFPV_CNN.trainer import dfpv_cnn_experiments
 from src.models.PMMR.model import pmmr_experiments
 from src.models.CEVAE.trainer import cevae_experiments
 from src.models.NMMR.NMMR_experiments import NMMR_experiment
@@ -22,6 +23,8 @@ def get_run_func(mdl_name: str):
         return kpv_experiments
     elif mdl_name == "dfpv":
         return dfpv_experiments
+    elif mdl_name == "dfpv_cnn":
+        return dfpv_cnn_experiments
     elif mdl_name == "pmmr":
         return pmmr_experiments
     elif mdl_name == "cevae":
