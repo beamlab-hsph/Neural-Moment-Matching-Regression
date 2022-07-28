@@ -34,10 +34,16 @@ class DFPV_CNN_Trainer(object):
         self.split_ratio: float = train_params["split_ratio"]
         self.add_stage1_intercept = True
         self.add_stage2_intercept = True
+        self.learning_rate = train_params["learning_rate"]
         self.treatment_weight_decay = train_params["treatment_weight_decay"]
         self.treatment_proxy_weight_decay = train_params["treatment_proxy_weight_decay"]
-        self.outcome_proxy_weight_decay = train_params["outcome_proxy_weight_decay"]
+        #self.outcome_proxy_weight_decay = train_params["outcome_proxy_weight_decay"]
+        # for simplicity in HP tuning, we are tying these together
+        self.outcome_proxy_weight_decay = train_params["treatment_weight_decay"]
         self.backdoor_weight_decay = train_params["backdoor_weight_decay"]
+
+        if self.learning_rate is None:
+            self.learning_rate = 0.001 #Adam default
 
         # build networks
         networks = build_extractor(data_configs["name"])
@@ -57,10 +63,10 @@ class DFPV_CNN_Trainer(object):
                 self.backdoor_2nd_net.to("cuda:0")
 
         self.treatment_1st_opt = torch.optim.Adam(self.treatment_1st_net.parameters(),
-                                                  lr=3e-05,
+                                                  lr=self.learning_rate,
                                                   weight_decay=self.treatment_weight_decay)
         self.treatment_2nd_opt = torch.optim.Adam(self.treatment_2nd_net.parameters(),
-                                                  lr=3e-05,
+                                                  lr=self.learning_rate,
                                                   weight_decay=self.treatment_weight_decay)
 
         self.treatment_proxy_opt = torch.optim.Adam(self.treatment_proxy_net.parameters(),
