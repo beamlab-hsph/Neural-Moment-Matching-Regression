@@ -57,8 +57,10 @@ class DFPV_CNN_Trainer(object):
                 self.backdoor_2nd_net.to("cuda:0")
 
         self.treatment_1st_opt = torch.optim.Adam(self.treatment_1st_net.parameters(),
+                                                  lr=3e-05,
                                                   weight_decay=self.treatment_weight_decay)
         self.treatment_2nd_opt = torch.optim.Adam(self.treatment_2nd_net.parameters(),
+                                                  lr=3e-05,
                                                   weight_decay=self.treatment_weight_decay)
 
         self.treatment_proxy_opt = torch.optim.Adam(self.treatment_proxy_net.parameters(),
@@ -102,6 +104,8 @@ class DFPV_CNN_Trainer(object):
         if self.backdoor_1st_net:
             self.backdoor_1st_net.train(True)
             self.backdoor_2nd_net.train(False)
+
+
 
         with torch.no_grad():
             outcome_proxy_feature = self.outcome_proxy_net(train_1st_t.outcome_proxy.reshape(-1, 1, 64, 64))
