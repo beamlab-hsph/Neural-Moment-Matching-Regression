@@ -11,4 +11,4 @@
 #python main.py configs/nmmr_u_dsprite.json ate
 #python main.py configs/nmmr_v_dsprite.json ate
 
-python main.py configs/hyperparamter_tuning_configs/dfpv_cnn_hptuning_dsprite.json ate
+python main.py configs/hyperparameter_tuning_configs/dfpv_cnn_hptuning_dsprite.json ate
