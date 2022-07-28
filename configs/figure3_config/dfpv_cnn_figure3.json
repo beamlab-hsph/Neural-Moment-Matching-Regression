@@ -3,7 +3,6 @@
   "data": {
     "name": "dsprite",
     "n_sample": [
-      1000,
       5000,
       7500
     ]
