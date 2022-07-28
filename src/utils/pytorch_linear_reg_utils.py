@@ -22,10 +22,10 @@ def fit_linear(target: torch.Tensor,
     A = torch.matmul(feature.t(), feature)
     device = feature.device
     A = A + reg * torch.eye(nDim, device=device) * nData
-    # U = torch.cholesky(A)
-    # A_inv = torch.cholesky_inverse(U)
+    U = torch.cholesky(A)
+    A_inv = torch.cholesky_inverse(U)
     # TODO use cholesky version in the latest pytorch
-    A_inv = torch.inverse(A)
+    #A_inv = torch.inverse(A)
     if target.dim() == 2:
         b = torch.matmul(feature.t(), target)
         weight = torch.matmul(A_inv, b)
