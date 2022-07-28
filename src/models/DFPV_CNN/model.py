@@ -144,8 +144,8 @@ class DFPV_CNN_Model:
             treatment_proxy_feature_1st = self.treatment_proxy_net(train_1st_data_t.treatment_proxy)
             treatment_proxy_feature_2nd = self.treatment_proxy_net(train_2nd_data_t.treatment_proxy)
 
-            outcome_proxy_feature_1st = self.outcome_proxy_net(train_1st_data_t.outcome_proxy)
-            outcome_proxy_feature_2nd = self.outcome_proxy_net(train_2nd_data_t.outcome_proxy)
+            outcome_proxy_feature_1st = self.outcome_proxy_net(train_1st_data_t.outcome_proxy.reshape(-1, 1, 64, 64))
+            outcome_proxy_feature_2nd = self.outcome_proxy_net(train_2nd_data_t.outcome_proxy.reshape(-1, 1, 64, 64))
             backdoor_1st_feature_1st = None
             backdoor_1st_feature_2nd = None
             backdoor_2nd_feature_2nd = None
@@ -183,7 +183,7 @@ class DFPV_CNN_Model:
         self.fit_t(train_1st_data_t, train_2nd_data_t, lam1, lam2)
 
     def predict_t(self, treatment: torch.Tensor):
-        treatment_feature = self.treatment_2nd_net(treatment)
+        treatment_feature = self.treatment_2nd_net(treatment.reshape(-1, 1, 64, 64))
         n_data = treatment_feature.shape[0]
         mean_outcome_proxy_mat = self.mean_outcome_proxy_feature.expand(n_data, -1)
         mean_backdoor_feature_mat = None
@@ -206,8 +206,8 @@ class DFPV_CNN_Model:
         return self.predict_bridge_t(treatment_t, output_proxy_t).data.numpy()
 
     def predict_bridge_t(self, treatment: torch.Tensor, output_proxy: torch.Tensor):
-        treatment_feature = self.treatment_2nd_net(treatment)
-        output_proxy_feature = self.outcome_proxy_net(output_proxy)
+        treatment_feature = self.treatment_2nd_net(treatment.reshape(-1, 1, 64, 64))
+        output_proxy_feature = self.outcome_proxy_net(output_proxy.reshape(-1, 1, 64, 64))
         feature = DFPV_CNN_Model.augment_stage2_feature(output_proxy_feature,
                                                    treatment_feature,
                                                    None,
