@@ -8,7 +8,7 @@
     ]
   },
   "model": {
-    "name": "dfpv",
+    "name": "dfpv_cnn",
     "lam1": 0.1,
     "lam2": 0.1,
     "stage1_iter": 20,
