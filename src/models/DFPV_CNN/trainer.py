@@ -72,6 +72,7 @@ class DFPV_CNN_Trainer(object):
         self.treatment_proxy_opt = torch.optim.Adam(self.treatment_proxy_net.parameters(),
                                                     weight_decay=self.treatment_proxy_weight_decay)
         self.outcome_proxy_opt = torch.optim.Adam(self.outcome_proxy_net.parameters(),
+                                                  lr=self.learning_rate,
                                                   weight_decay=self.outcome_proxy_weight_decay)
 
         if self.backdoor_1st_net:

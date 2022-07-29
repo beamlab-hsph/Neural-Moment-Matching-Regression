@@ -43,4 +43,4 @@ def ate(ctx, num_thread):
 if __name__ == '__main__':
     main(obj={})
     # for debugging: you can pass in a desired config without the command-line like:
-    #main(['configs/figure3_config/dfpv_cnn_figure3.json', 'ate'], obj={})
+    #main(['configs/hyperparameter_tuning_configs/dfpv_cnn_hptuning_dsprite.json', 'ate'], obj={})

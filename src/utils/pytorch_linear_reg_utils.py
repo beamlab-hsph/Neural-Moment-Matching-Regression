@@ -1,9 +1,10 @@
 import torch
+import numpy as np
 
 
 def fit_linear(target: torch.Tensor,
                feature: torch.Tensor,
-               reg: float = 0.0):
+               reg: float = 0):
     """
     Parameters
     ----------
@@ -22,10 +23,15 @@ def fit_linear(target: torch.Tensor,
     A = torch.matmul(feature.t(), feature)
     device = feature.device
     A = A + reg * torch.eye(nDim, device=device) * nData
-    U = torch.cholesky(A)
-    A_inv = torch.cholesky_inverse(U)
+    A = A + torch.randn_like(A)*1e-8
+    #U = torch.cholesky(A)
+    #A_inv = torch.cholesky_inverse(U)
     # TODO use cholesky version in the latest pytorch
-    #A_inv = torch.inverse(A)
+    # test if non-invertible
+    if torch.linalg.matrix_rank(A, hermitian=True) < A.shape[0]:
+        print(feature)
+        print(A)
+    A_inv = torch.inverse(A)
     if target.dim() == 2:
         b = torch.matmul(feature.t(), target)
         weight = torch.matmul(A_inv, b)
