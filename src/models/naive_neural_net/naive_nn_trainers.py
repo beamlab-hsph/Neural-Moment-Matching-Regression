@@ -68,7 +68,7 @@ class Naive_NN_Trainer_DemandExperiment(object):
                 if self.model_name == "naive_neural_net_AWZY":
                     batch_inputs = torch.cat((train_t.treatment[indices], train_t.outcome_proxy[indices],
                                               train_t.treatment_proxy[indices]), dim=1)
-                if self.model_name == "naive_neural_net_AW":
+                if self.model_name == "naive_neural_net_AWY":
                     batch_inputs = torch.cat((train_t.treatment[indices], train_t.outcome_proxy[indices]), dim=1)
 
                 # training loop
@@ -143,7 +143,7 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
         elif self.model_name == "naive_neural_net_AWZY":
             # inputs consist of A, W, and Z (and Z is 2-dimensional)
             model = Naive_NN_for_dsprite_AWZY(train_params=self.train_params)
-        elif self.model_name == "naive_neural_net_AW":
+        elif self.model_name == "naive_neural_net_AWY":
             model = Naive_NN_for_dsprite_AWY(train_params=self.train_params)
         else:
             raise ValueError(f"name {self.model_name} is not known")
