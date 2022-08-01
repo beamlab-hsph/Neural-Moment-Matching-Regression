@@ -33,7 +33,7 @@ def get_run_func(mdl_name: str):
         return NMMR_experiment
     elif mdl_name in ["linear_regression_AY", "linear_regression_AWZY", "linear_regression_AY2", "linear_regression_AWZY2"]:
         return linear_reg_demand_experiment
-    elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY":
+    elif mdl_name == "naive_neural_net_AY" or mdl_name == "naive_neural_net_AWZY" or mdl_name == "naive_neural_net_AWY":
         return naive_nn_experiment
     elif mdl_name == "twoSLS":
         return twoSLS_experiment

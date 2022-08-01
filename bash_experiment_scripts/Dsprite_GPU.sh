@@ -4,8 +4,8 @@
 #SBATCH -p gpu_beam                        # Partition to run in
 #SBATCH --gres gpu:a100:1                        # Number of gpus
 #SBATCH --mem=24g                       # Memory total in MiB (for all cores)
-#SBATCH -o slurm_logs/Demand_GPU_%j.out                 # File to which STDOUT will be written, including job ID (%j)
-#SBATCH -e slurm_logs/Demand_GPU_%j.err                 # File to which STDERR will be written, including job ID (%j)
+#SBATCH -o slurm_logs/Dsprite_GPU_%j.out                 # File to which STDOUT will be written, including job ID (%j)
+#SBATCH -e slurm_logs/Dsprite_GPU_%j.err                 # File to which STDERR will be written, including job ID (%j)
 #SBATCH --account=beam_ab455
 
 #echo "Running naive linear regression Y ~ A + W + Z"
@@ -26,4 +26,4 @@
 #echo "Running PMMR"
 #python main.py configs/pmmr.json ate
 
-python main.py configs/hyperparameter_tuning_configs/naivenet_aw_hptuning_demand.json ate
+python main.py configs/hyperparameter_tuning_configs/naivenet_aw_hptuning_dsprite.json ate
