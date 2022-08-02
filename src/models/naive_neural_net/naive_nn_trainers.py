@@ -7,8 +7,8 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from src.data.ate.data_class import PVTrainDataSetTorch, PVTestDataSetTorch
-from src.models.naive_neural_net.naive_nn_model import Naive_NN_for_demand, Naive_NN_for_dsprite_AY, Naive_NN_for_dsprite_AWZY
-from src.utils.make_AWZ_test import make_AWZ_test
+from src.models.naive_neural_net.naive_nn_model import Naive_NN_for_demand, Naive_NN_for_dsprite_AY, Naive_NN_for_dsprite_AWZY, Naive_NN_for_dsprite_AWY
+from src.utils.make_AWZ_test import make_AWZ_test, make_AW_test
 
 
 class Naive_NN_Trainer_DemandExperiment(object):
@@ -39,6 +39,9 @@ class Naive_NN_Trainer_DemandExperiment(object):
         elif self.model_name == "naive_neural_net_AWZY":
             # inputs consist of A, W, and Z (and Z is 2-dimensional)
             model = Naive_NN_for_demand(input_dim=4, train_params=self.train_params)
+        elif self.model_name == "naive_neural_net_AWY":
+            # inputs consist of A, W
+            model = Naive_NN_for_demand(input_dim=2, train_params=self.train_params)
         else:
             raise ValueError(f"name {self.model_name} is not known")
 
@@ -65,6 +68,8 @@ class Naive_NN_Trainer_DemandExperiment(object):
                 if self.model_name == "naive_neural_net_AWZY":
                     batch_inputs = torch.cat((train_t.treatment[indices], train_t.outcome_proxy[indices],
                                               train_t.treatment_proxy[indices]), dim=1)
+                if self.model_name == "naive_neural_net_AWY":
+                    batch_inputs = torch.cat((train_t.treatment[indices], train_t.outcome_proxy[indices]), dim=1)
 
                 # training loop
                 optimizer.zero_grad()
@@ -81,6 +86,9 @@ class Naive_NN_Trainer_DemandExperiment(object):
                     elif self.model_name == "naive_neural_net_AWZY":
                         preds_train = model(torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1))
                         preds_val = model(torch.cat((val_t.treatment, val_t.outcome_proxy, val_t.treatment_proxy), dim=1))
+                    elif self.model_name == "naive_neural_net_AWY":
+                        preds_train = model(torch.cat((train_t.treatment, train_t.outcome_proxy), dim=1))
+                        preds_val = model(torch.cat((val_t.treatment, val_t.outcome_proxy), dim=1))
 
                         # "Observed" MSE (not causal MSE) loss calculation
                     mse_train = loss(preds_train, train_t.outcome)
@@ -100,6 +108,10 @@ class Naive_NN_Trainer_DemandExperiment(object):
         elif model.train_params['name'] == "naive_neural_net_AWZY":
             AWZ_test = make_AWZ_test(test_data_t, val_data_t)
             pred = torch.mean(model(AWZ_test), dim=1).cpu().detach().numpy()
+
+        elif model.train_params['name'] == "naive_neural_net_AWY":
+            AW_test = make_AW_test(test_data_t, val_data_t)
+            pred = torch.mean(model(AW_test), dim=1).cpu().detach().numpy()
 
         return pred
 
@@ -131,6 +143,8 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
         elif self.model_name == "naive_neural_net_AWZY":
             # inputs consist of A, W, and Z (and Z is 2-dimensional)
             model = Naive_NN_for_dsprite_AWZY(train_params=self.train_params)
+        elif self.model_name == "naive_neural_net_AWY":
+            model = Naive_NN_for_dsprite_AWY(train_params=self.train_params)
         else:
             raise ValueError(f"name {self.model_name} is not known")
 
@@ -162,6 +176,12 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
                     batch_A = batch_A.reshape(-1, 1, 64, 64)
                     batch_W = batch_A.reshape(-1, 1, 64, 64)
                     pred_y = model(batch_A, batch_W, batch_Z)
+                if self.model_name == "naive_neural_net_AWY":
+                    batch_A, batch_W, batch_y = train_t.treatment[indices], train_t.outcome_proxy[indices], \
+                                                         train_t.outcome[indices]
+                    batch_A = batch_A.reshape(-1, 1, 64, 64)
+                    batch_W = batch_A.reshape(-1, 1, 64, 64)
+                    pred_y = model(batch_A, batch_W)
                 output = loss(pred_y, batch_y)
                 output.backward()
                 optimizer.step()
@@ -174,7 +194,9 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
                     elif self.model_name == "naive_neural_net_AWZY":
                         preds_train = model(train_t.treatment.reshape(-1, 1, 64, 64), train_t.outcome_proxy.reshape(-1, 1, 64, 64), train_t.treatment_proxy)
                         preds_val = model(val_t.treatment.reshape(-1, 1, 64, 64), val_t.outcome_proxy.reshape(-1, 1, 64, 64), val_t.treatment_proxy)
-
+                    elif self.model_name == "naive_neural_net_AWY":
+                        preds_train = model(train_t.treatment.reshape(-1, 1, 64, 64), train_t.outcome_proxy.reshape(-1, 1, 64, 64))
+                        preds_val = model(val_t.treatment.reshape(-1, 1, 64, 64), val_t.outcome_proxy.reshape(-1, 1, 64, 64))
                     # "Observed" MSE (not causal MSE) loss calculation
                     mse_train = loss(preds_train, train_t.outcome)
                     mse_val = loss(preds_val, val_t.outcome)
@@ -204,6 +226,9 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
                     E_w_haw = mean(model(test_A).unsqueeze(-1).T)
                 elif model_name == "naive_neural_net_AWZY":
                     E_w_haw = mean(model(test_A, test_W, test_Z).unsqueeze(-1).T)
+                elif model_name == "naive_neural_net_AWY":
+                    E_w_haw = mean(model(test_A, test_W).unsqueeze(-1).T)
+
             else:
                 # the number of A's to evaluate each batch
                 a_step = max(1, batch_size//num_W_test)
@@ -221,12 +246,16 @@ class Naive_NN_Trainer_dSpriteExperiment(object):
                                 model_preds[temp_idx:(temp_idx+batch_size)] = model(temp_A[temp_idx:temp_idx+batch_size]).squeeze()
                             elif model_name == "naive_neural_net_AWZY":
                                 model_preds[temp_idx:(temp_idx+batch_size)] = model(temp_A[temp_idx:temp_idx+batch_size], temp_W[temp_idx:temp_idx+batch_size], temp_Z[temp_idx:temp_idx+batch_size]).squeeze()
+                            elif model_name == "naive_neural_net_AWY":
+                                model_preds[temp_idx:(temp_idx+batch_size)] = model(temp_A[temp_idx:temp_idx+batch_size], temp_W[temp_idx:temp_idx+batch_size]).squeeze()
                         E_w_haw[0, 0, a_idx] = torch.mean(model_preds)
                     else:
                         if model_name == "naive_neural_net_AY":
                             temp_E_w_haw = mean(model(temp_A).unsqueeze(-1).T)
                         elif model_name == "naive_neural_net_AWZY":
                             temp_E_w_haw = mean(model(temp_A, temp_W, temp_Z).unsqueeze(-1).T)
+                        elif model_name == "naive_neural_net_AWY":
+                            temp_E_w_haw = mean(model(temp_A, temp_W).unsqueeze(-1).T)
                         E_w_haw[0, 0, a_idx:(a_idx+a_step)] = temp_E_w_haw[0, 0]
 
         return E_w_haw.T.squeeze(1).cpu().detach().numpy()

@@ -1,5 +1,5 @@
 # Neural Maximum Moment Restriction
-Code for a NeurIPS 2022 submission and fork from [Xu et al., 2021](https://github.com/liyuan9988/DeepFeatureProxyVariable). 
+Fork from [Xu et al., 2021](https://github.com/liyuan9988/DeepFeatureProxyVariable). 
 
 ## How to Run Experiments
 
