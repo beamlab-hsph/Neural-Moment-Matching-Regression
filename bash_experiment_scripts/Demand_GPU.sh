@@ -26,4 +26,4 @@
 #echo "Running PMMR"
 #python main.py configs/pmmr.json ate
 
-python main.py configs/hyperparameter_tuning_configs/naivenet_aw_hptuning_demand.json ate
+python main.py configs/figure2_config/naivenet_aw_figure2.json ate

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -c 1                               # Request one core
-#SBATCH -t 2-00:00                         # Runtime in D-HH:MM format
+#SBATCH -t 7-00:00                         # Runtime in D-HH:MM format
 #SBATCH -p gpu_beam                        # Partition to run in
 #SBATCH --gres gpu:a100:1                        # Number of gpus
 #SBATCH --mem=24g                       # Memory total in MiB (for all cores)
@@ -26,4 +26,4 @@
 #echo "Running PMMR"
 #python main.py configs/pmmr.json ate
 
-python main.py configs/hyperparameter_tuning_configs/naivenet_aw_hptuning_dsprite.json ate
+python main.py configs/figure3_config/naivenet_aw_figure3.json ate
