@@ -13,7 +13,7 @@ df = read.csv("aggregated_results_for_figures/demand_boxplot_data.csv")
 df$sample_size = as.factor(df$sample_size)
 
 # ordering by descending MSE in first panel
-methods = c('pmmr', 'kpv', 'naivenet_awzy', 'naivenet_awy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awy', 'nmmr_u', 'nmmr_v')
+methods = c('pmmr', 'kpv', 'naivenet_awy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awy', 'nmmr_u', 'nmmr_v')
 df_subset = df[which(df$method %in% methods),]
 
 df_subset$method = factor(df_subset$method, levels=methods)
@@ -40,9 +40,9 @@ p <- ggplot(df_subset, aes(x=sample_size, y=oos_mse, fill=method, size=linewidth
   scale_y_continuous(trans='log10', labels=commafy) + 
   scale_x_discrete(labels=commafy) +
   coord_cartesian(ylim = c(5, 4000)) +
-  scale_fill_manual(labels=c("PMMR", "KPV", "Naive net Y~AWZ", "Naive net Y~AW", "CEVAE", "2SLS", "DFPV", "LS",
+  scale_fill_manual(labels=c("PMMR", "KPV", "Naive net", "CEVAE", "2SLS", "DFPV", "LS",
    "**NMMR U (ours)**", "**NMMR V (ours)**"),
-                    values=c("aquamarine4", "deeppink2", "lemonchiffon2", "blue",
+                    values=c("aquamarine4", "deeppink2", "lemonchiffon2",
                              "goldenrod2", "red", "steelblue2", "yellow", "darkorchid3", "magenta2")) +
   scale_size_manual(values=c(0.3, 0.15, 0.05), guide="none") +
   theme_bw() + 

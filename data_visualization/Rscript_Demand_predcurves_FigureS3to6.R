@@ -10,7 +10,7 @@ df = read.csv("aggregated_results_for_figures/demand_predcurve_data.csv")
 
 # subset methods for the plot
 methods = c('linear_reg_awy', 'cevae', 'kpv', 'pmmr', 'twosls', 
-            'linear_reg_aw2y', 'naivenet_awzy', 'dfpv', 'nmmr_u', 'nmmr_v')
+            'linear_reg_aw2y', 'naivenet_awy', 'dfpv', 'nmmr_u', 'nmmr_v')
 
 for (n in c(1000, 5000, 10000, 50000)) {
   
@@ -28,7 +28,7 @@ for (n in c(1000, 5000, 10000, 50000)) {
                     nmmr_u = "**NMMR U (ours)**", 
                     nmmr_v = "**NMMR V (ours)**", 
                     twosls = "2SLS", 
-                    naivenet_awzy = "Naive net", 
+                    naivenet_awy = "Naive net", 
                     linear_reg_awy = "LS", 
                     linear_reg_aw2y = "LS-QF")
   

@@ -24,7 +24,7 @@ class Naive_NN_Trainer_DemandExperiment(object):
         self.l2_penalty = self.train_params['l2_penalty']
         self.learning_rate = self.train_params['learning_rate']
         self.gpu_flg = torch.cuda.is_available()
-        self.log_metrics = self.train_params.get('log_metrics', False)
+        self.log_metrics = self.train_params.get('log_metrics', False) == 'True'
 
         if self.log_metrics and (dump_folder is not None):
             self.writer = SummaryWriter(log_dir=op.join(dump_folder, f"tensorboard_log_{random_seed}"))

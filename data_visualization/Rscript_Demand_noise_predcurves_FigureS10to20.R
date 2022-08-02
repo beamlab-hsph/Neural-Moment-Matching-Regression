@@ -17,12 +17,13 @@ method_names <- c(kpv = "KPV",
                   nmmr_u = "NMMR U", 
                   nmmr_v = "NMMR V", 
                   twosls = "2SLS", 
-                  naivenet_awzy = "Naive net", 
+                  naivenet_awy = "Naive net", 
                   linear_reg_awy = "LS", 
                   linear_reg_aw2y = "LS-QF")
 
 # ordering by descending MSE in first panel
-methods = c('pmmr', 'kpv', 'naivenet_awzy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awy', 'linear_reg_aw2y', 'nmmr_u', 'nmmr_v')
+# methods = c('pmmr', 'kpv', 'naivenet_awy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awy', 'linear_reg_aw2y', 'nmmr_u', 'nmmr_v')
+methods = c('naivenet_awy')
 df_subset = df[which(df$method %in% methods),]
 
 for (method in methods) {
