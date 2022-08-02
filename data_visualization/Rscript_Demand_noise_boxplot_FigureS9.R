@@ -6,8 +6,7 @@ library(extrafont)
 loadfonts()
 
 # Set the working directory to results/
-setwd("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/results")
-
+setwd("~/")
 df = read.csv("aggregated_results_for_figures/demand_noise_boxplot_data.csv")
 
 # ordering by descending MSE in first panel

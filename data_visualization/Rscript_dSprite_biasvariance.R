@@ -4,8 +4,7 @@ library(dplyr)
 library(latex2exp)
 
 # Set the working directory to results/
-setwd("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/results/")
-
+setwd("~/")
 df = read.csv("aggregated_results_for_figures/dsprite_biasvariance.csv")
 
 # subset methods for the plot

@@ -6,8 +6,7 @@ library(extrafont)
 loadfonts()
 
 # Set the working directory to results/
-setwd("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/results/")
-
+setwd("~/")
 df = read.csv("aggregated_results_for_figures/demand_noise_predcurve_data.csv")
 
 method_names <- c(kpv = "KPV", 
