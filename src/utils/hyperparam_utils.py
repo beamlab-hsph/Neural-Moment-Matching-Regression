@@ -48,11 +48,11 @@ def get_hyperparameter_results_dataframe(dump_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dump_dir')
-    parser.add_argument('--out_dir')
+    parser.add_argument('--dump_dir', default='/Users/kompa/Downloads/naive_neural_net_AWY_08-01-17-51-42')
+    parser.add_argument('--out_dir', default='/Users/kompa/Downloads/')
     parser.add_argument('--experiment')
     args = parser.parse_args()
 
     results_df = get_hyperparameter_results_dataframe(args.dump_dir)
-    results_df.to_csv(op.join(args.out_dir, "hp_results.csv"), index=False)
+    results_df.to_csv(op.join(args.out_dir, f"hp_results_{os.path.basename(os.path.normpath(args.dump_dir))}.csv"), index=False)
     # results_df.to_pickle(op.join(args.out_dir, "hp_results.pkl"))
