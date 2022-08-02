@@ -4,13 +4,13 @@ library(dplyr)
 library(latex2exp)
 
 # Set the working directory to results/
-setwd("~/")
+setwd("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/results/")
 
-df = read.csv("demand_predcurve_data.csv")
+df = read.csv("aggregated_results_for_figures/demand_predcurve_data.csv")
 
 # subset methods for the plot
-methods = c('linear_reg_awzy', 'cevae', 'kpv', 'pmmr', 'twosls', 
-            'linear_reg_awzy2', 'naivenet_awzy', 'dfpv', 'nmmr_u', 'nmmr_v')
+methods = c('linear_reg_awy', 'cevae', 'kpv', 'pmmr', 'twosls', 
+            'linear_reg_aw2y', 'naivenet_awzy', 'dfpv', 'nmmr_u', 'nmmr_v')
 
 for (n in c(1000, 5000, 10000, 50000)) {
   
@@ -29,8 +29,8 @@ for (n in c(1000, 5000, 10000, 50000)) {
                     nmmr_v = "**NMMR V (ours)**", 
                     twosls = "2SLS", 
                     naivenet_awzy = "Naive net", 
-                    linear_reg_awzy = "LS", 
-                    linear_reg_awzy2 = "LS-QF")
+                    linear_reg_awy = "LS", 
+                    linear_reg_aw2y = "LS-QF")
   
   p <- ggplot(df_subset) + 
     geom_line(aes(x=A, y=pred_EY_doA, group=rep), color="#438BC4", linetype="dotted", alpha=1) + 

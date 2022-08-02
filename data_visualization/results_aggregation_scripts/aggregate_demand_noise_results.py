@@ -19,7 +19,7 @@ Saves the aggregated results to csv files in the results/ folder
 """
 
 cwd = os.getcwd()
-data_for_figs = op.join(cwd, "data_for_demand_noiselevel_figures")
+data_for_figs = op.join(op.dirname(cwd), "data_for_demand_noiselevel_figures")
 method_dirs = next(os.walk(data_for_figs))[1]
 
 # Get true EY_doA

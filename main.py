@@ -14,7 +14,6 @@ SRC_DIR = Path.cwd().joinpath('src')
 
 @click.group()
 @click.argument('config_path', type=click.Path(exists=True))
-@click.option('--debug/--release', default=False)
 @click.pass_context
 def main(ctx, config_path):
     with open(config_path) as f:

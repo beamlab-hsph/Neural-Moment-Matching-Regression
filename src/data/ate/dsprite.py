@@ -19,7 +19,7 @@ def image_id(latent_bases: np.ndarray, posX_id_arr: np.ndarray, posY_id_arr: np.
     return idx.dot(latent_bases)
 
 
-def structural_func(image, weights):
+def structural_func(image, weights):  # weights: (4096 x 10), image: (4096 x 1)
     return (np.mean((image.dot(weights)) ** 2, axis=1) - 5000) / 1000
 
 

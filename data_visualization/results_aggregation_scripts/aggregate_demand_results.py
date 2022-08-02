@@ -21,7 +21,7 @@ ticket_prices_coarse = np.linspace(10, 30, 10)
 true_EY_doA = np.array([cal_structural(a, 1) for a in ticket_prices_coarse])
 
 cwd = os.getcwd()
-data_for_figs = op.join(cwd, "data_for_demand_figures")
+data_for_figs = op.join(op.dirname(cwd), "data_for_demand_figures")
 method_dirs = next(os.walk(data_for_figs))[1]
 
 boxplot_df = pd.DataFrame(columns=['sample_size', 'method', 'oos_mse'])
@@ -38,7 +38,7 @@ for method_dir in method_dirs:
         result_dir_path = op.join(data_for_figs, method_dir, result_dir)
 
         boxplot_result_path = op.join(result_dir_path, "result.csv")
-        if op.isdir(op.join(data_for_figs, method_dir, result_dir)):
+        if op.isdir(result_dir_path):
             oos_mse = np.loadtxt(boxplot_result_path)
             boxplot_df = boxplot_df.append(
                 pd.DataFrame({'sample_size': sample_size, 'method': method_name, 'oos_mse': oos_mse}))

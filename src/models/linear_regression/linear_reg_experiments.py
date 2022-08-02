@@ -9,6 +9,8 @@ from src.data.ate import generate_train_data_ate, generate_test_data_ate, get_pr
 from sklearn import linear_model
 from src.utils.make_AWZ_test import make_AWZ_test
 from src.utils.make_AWZ2_test import make_AWZ2_test
+from src.utils.make_AW_test import make_AW_test
+from src.utils.make_AW2_test import make_AW2_test
 
 
 def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[str, Any],
@@ -45,6 +47,14 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
         # get model predictions on do(A) intervention values
         pred = model.predict(test_data.treatment.reshape(-1, 1))
 
+    elif model_name == "linear_regression_AWY":
+        features = torch.cat((train_t.treatment, train_t.outcome_proxy), dim=1)
+        model.fit(features, Y)
+
+        # get model predictions on do(A) intervention values
+        AW_test = make_AW_test(test_data_t, val_data_t)
+        pred = [np.mean(model.predict(AW_test[i, :, :])) for i in range(AW_test.shape[0])]
+
     elif model_name == "linear_regression_AWZY":
         features = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy), dim=1)
         model.fit(features, Y)
@@ -60,6 +70,16 @@ def linear_reg_demand_experiment(data_config: Dict[str, Any], model_param: Dict[
         # get model predictions on do(A) intervention values
         test_features = np.concatenate((test_data.treatment, test_data.treatment ** 2), axis=-1)
         pred = model.predict(test_features)
+
+    elif model_name == "linear_regression_AWY2":
+        features = torch.cat((train_t.treatment, train_t.treatment ** 2,
+                              train_t.outcome_proxy, train_t.outcome_proxy ** 2,
+                              train_t.treatment * train_t.outcome_proxy), dim=1)
+        model.fit(features, Y)
+
+        # get model predictions on do(A) intervention values
+        AW2_test = make_AW2_test(test_data_t, val_data_t)
+        pred = [np.mean(model.predict(AW2_test[i, :, :])) for i in range(AW2_test.shape[0])]
 
     elif model_name == "linear_regression_AWZY2":
         features = torch.cat((train_t.treatment, train_t.outcome_proxy, train_t.treatment_proxy,

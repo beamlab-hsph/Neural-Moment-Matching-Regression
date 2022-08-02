@@ -6,12 +6,12 @@ library(extrafont)
 loadfonts()
 
 # Set the working directory to results/
-setwd("~/")
+setwd("/Users/dab1963/PycharmProjects/Neural-Moment-Matching-Regression/results")
 
 df = read.csv("aggregated_results_for_figures/demand_noise_boxplot_data.csv")
 
 # ordering by descending MSE in first panel
-methods = c('pmmr', 'kpv', 'naivenet_awzy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awzy', 'nmmr_u', 'nmmr_v')
+methods = c('pmmr', 'kpv', 'naivenet_awzy', 'cevae', 'twosls', 'dfpv', 'linear_reg_awy', 'nmmr_u', 'nmmr_v')
 df_subset = df[which(df$method %in% methods),]
 
 df_subset$method = factor(df_subset$method, levels=methods)
